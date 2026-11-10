@@ -453,7 +453,7 @@ function penalizeStudent(reason) {
   } else {
     G.status = `Bloqueado temporalmente (Intento ${G.attempts}/3)`;
     sv();
-    alert(`⚠️ ALERTA (${reason})\n\nSaliste o minimizaste la pantalla (Aviso ${G.attempts} de 3).\nEl docente deberá habilitarte nuevamente desde su panel.`);
+    alert(`⚠️ ALERTA (${reason})\n\nSaliste o minimizaste la pantalla (Aviso ${G.attempts} de 3).\nEl docente deberá habilitarte nuevamente.`);
     home();
   }
 }
@@ -1012,24 +1012,29 @@ async function panelDocente(){
       <button onclick="setCloudRoom(true)">Habilitar Sala</button>
       <button class="danger" onclick="setCloudRoom(false)">Cerrar Sala</button>
     </div>
+
     <div class="c">
-      <h2>Monitoreo y Rehabilitación de Estudiantes</h2>
+      <h2>🔓 Rehabilitar Estudiante Bloqueado</h2>
+      <p class="mu">Si un alumno fue bloqueado en su teléfono, ingresá su Curso y Nombre para rehabilitarlo:</p>
+      <input id="reh_cu" placeholder="Curso y división (ej.: 2.º 1.ª)">
+      <input id="reh_nom" placeholder="Nombre del Integrante 1">
+      <button onclick="rehabilitarPorNombre()">Rehabilitar Estudiante</button>
+    </div>
+
+    <div class="c">
+      <h2>Monitoreo Local</h2>
       <table>
-        <thead><tr><th>Estudiantes</th><th>Nota Final (÷ 6)</th><th>Salidas / Estado</th><th>Acción Docente</th></tr></thead>
+        <thead><tr><th>Estudiantes</th><th>Nota Final (÷ 6)</th><th>Salidas / Estado</th></tr></thead>
         <tbody>
-          ${ks.length === 0 ? '<tr><td colspan="4">No hay registros guardados localmente en este dispositivo.</td></tr>' : ''}
+          ${ks.length === 0 ? '<tr><td colspan="3">Sin registros en este dispositivo. Las notas generales podés verlas en tu Google Sheet.</td></tr>' : ''}
           ${ks.map(k => {
             const g = DB[k];
             const tot = calcTotalScoreStrict(g);
-            const needsReset = (g.attempts > 0) || (g.status && g.status.includes('Bloqueado')) || (g.status && g.status.includes('Desaprobado'));
             return `
               <tr>
                 <td><b>${g.m.join(', ')}</b><br><small>${g.cu||''}</small></td>
                 <td><b>${f1(tot)}</b></td>
-                <td>${g.status || 'En línea'}<br><small>Intentos de salida: ${g.attempts || 0}/3</small></td>
-                <td>
-                  ${needsReset ? `<button onclick="resetStudentAttempts('${k}')">Rehabilitar Estudiante</button>` : '—'}
-                </td>
+                <td>${g.status || 'En línea'}<br><small>Intentos: ${g.attempts || 0}/3</small></td>
               </tr>
             `;
           }).join('')}
@@ -1039,14 +1044,36 @@ async function panelDocente(){
   `;
 }
 
-function resetStudentAttempts(key){
+function rehabilitarPorNombre(){
+  const cu = $('#reh_cu').value.trim();
+  const nom = $('#reh_nom').value.trim();
+  if(!cu || !nom){ alert("Completá el curso y el nombre del integrante."); return; }
+  
+  const key = `${cu} - ${nom}`;
+  
   if(DB[key]){
     DB[key].attempts = 0;
     DB[key].status = 'Habilitado por el docente';
     sv();
-    alert(`Estudiante rehabilitado exitosamente.`);
-    panelDocente();
+  } else {
+    const payload = {
+      cu: cu,
+      m: [nom],
+      sc: {},
+      finalScore: 0,
+      status: "Habilitado por el docente",
+      attempts: 0
+    };
+    fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
   }
+  
+  alert(`Solicitud de rehabilitación enviada para ${key}. El alumno ya puede volver a ingresar.`);
+  panelDocente();
 }
 
 async function setCloudRoom(active){
