@@ -366,7 +366,7 @@ const AC=[
 ];
 
 let DB={}, G=null, tm=null, Q=[], k=0, sc=0, GI='', LI=0, isPractice=false, activeExam=false;
-let roomState = { active: false, expiresAt: null };
+let roomActiveCloud = false;
 let highlightedCount = 0;
 let readingQuizStep = 0;
 let readingQuizScore = 0;
@@ -375,15 +375,12 @@ let activeParticle = 'prot';
 let placedParticles = [];
 const ATOM_TARGET = { name: 'Carbono (C)', Z: 6, A: 12, p: 6, n: 6, e: 6 };
 
-const ld=()=>{
-  try{ DB=JSON.parse(localStorage.getItem('tp2_db')||'{}'); }catch(e){ DB={}; }
-  try{ roomState=JSON.parse(localStorage.getItem('tp2_room')||'{"active":false,"expiresAt":null}'); }catch(e){ roomState={active:false,expiresAt:null}; }
+const ld = () => {
+  try { DB = JSON.parse(localStorage.getItem('tp2_db') || '{}'); } catch(e) { DB = {}; }
 };
 
-const sv=()=>{
-  try{ localStorage.setItem('tp2_db',JSON.stringify(DB)); }catch(e){ }
-  try{ localStorage.setItem('tp2_room',JSON.stringify(roomState)); }catch(e){ }
-  
+const sv = () => {
+  try { localStorage.setItem('tp2_db', JSON.stringify(DB)); } catch(e) { }
   if (G && SCRIPT_URL) {
     const payload = {
       ...G,
@@ -395,6 +392,16 @@ const sv=()=>{
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     }).catch(err => console.log("Error al sincronizar con Sheets:", err));
+  }
+};
+
+const checkCloudRoom = async () => {
+  try {
+    const res = await fetch(SCRIPT_URL);
+    const data = await res.json();
+    roomActiveCloud = !!data.roomActive;
+  } catch(e) {
+    roomActiveCloud = false;
   }
 };
 
@@ -419,15 +426,6 @@ const calcTotalScoreStrict = (groupObj) => {
     }
   });
   return sumAverages / 6;
-};
-
-const checkRoomStatus = () => {
-  if (roomState.active && roomState.expiresAt && Date.now() > roomState.expiresAt) {
-    roomState.active = false;
-    roomState.expiresAt = null;
-    sv();
-  }
-  return roomState.active;
 };
 
 window.addEventListener('visibilitychange', () => {
@@ -455,13 +453,14 @@ function penalizeStudent(reason) {
   } else {
     G.status = `Bloqueado temporalmente (Intento ${G.attempts}/3)`;
     sv();
-    alert(`⚠️ ALERTA (${reason})\n\nSaliste o minimizaste la pantalla (Aviso ${G.attempts} de 3).\nEl docente deberá habilitarte nuevamente para continuar.`);
+    alert(`⚠️ ALERTA (${reason})\n\nSaliste o minimizaste la pantalla (Aviso ${G.attempts} de 3).\nEl docente deberá habilitarte nuevamente desde su panel.`);
     home();
   }
 }
 
-function reg(){
-  clearInterval(tm); G=null; activeExam=false; ld(); checkRoomStatus();
+async function reg(){
+  clearInterval(tm); G=null; activeExam=false; ld();
+  await checkCloudRoom();
   const ks=Object.keys(DB);
   app.innerHTML=`
     <div class="nav-docente">
@@ -470,7 +469,7 @@ function reg(){
     </div>
     <p class="mu">2.º año · Química y Física</p>
     
-    ${!roomState.active ? `
+    ${!roomActiveCloud ? `
       <div class="banner">🔒 La sala de evaluación presencial está CERRADA por el docente. Podés repasar la teoría y practicar libremente.</div>
     `: `
       <div class="banner-info">🟢 La sala de evaluación presencial está HABILITADA.</div>
@@ -483,14 +482,14 @@ function reg(){
       <input id="m2" placeholder="Integrante 2 (opcional)">
       <input id="m3" placeholder="Integrante 3 (opcional)">
       <div id="er" class="r"></div>
-      <button onclick="nuevo()" ${!roomState.active ? 'disabled' : ''}>Registrar y empezar evaluación</button>
+      <button onclick="nuevo()" ${!roomActiveCloud ? 'disabled' : ''}>Registrar y empezar evaluación</button>
     </div>
 
     ${ks.length?`
       <div class="c">
         <h2>Continuar con un registro guardado</h2>
         <select id="sg">${ks.map(x=>`<option>${x}</option>`).join('')}</select>
-        <button class="s" onclick="entrar($('#sg').value)" ${!roomState.active ? 'disabled' : ''}>Continuar</button>
+        <button class="s" onclick="entrar($('#sg').value)" ${!roomActiveCloud ? 'disabled' : ''}>Continuar</button>
       </div>
     `:''}
 
@@ -501,9 +500,9 @@ function reg(){
   `;
 }
 
-function nuevo(){
-  checkRoomStatus();
-  if(!roomState.active){ alert("La sala está cerrada por el docente."); return; }
+async function nuevo(){
+  await checkCloudRoom();
+  if(!roomActiveCloud){ alert("La sala está cerrada por el docente."); return; }
   const m=['#m1','#m2','#m3'].map(x=>$(x).value.trim()).filter(Boolean);
   const cu=$('#cu').value.trim();
   if(!cu || !m.length){$('#er').textContent='Completá el curso y al menos un integrante.';return}
@@ -515,8 +514,9 @@ function nuevo(){
 
 function entrar(n){ ld(); G=DB[n]; home(); }
 
-function home(){
-  clearInterval(tm); activeExam=false; isPractice=false; checkRoomStatus();
+async function home(){
+  clearInterval(tm); activeExam=false; isPractice=false;
+  await checkCloudRoom();
   const finStrict = calcTotalScoreStrict(G);
 
   let completedLevelsCount = 0;
@@ -555,8 +555,9 @@ function home(){
   `;
 }
 
-function lvl(i){
-  clearInterval(tm); LI=i; checkRoomStatus();
+async function lvl(i){
+  clearInterval(tm); LI=i;
+  await checkCloudRoom();
   const r=G?G.read[i]:true;
   highlightedCount = 0; readingQuizStep = 0; readingQuizScore = 0;
   showTheoryScreen(i, r || !G);
@@ -582,11 +583,11 @@ function showTheoryScreen(i, alreadyRead){
     ${G && alreadyRead ? `
       <div class="c">
         <h2>Evaluación Oficial</h2>
-        ${!roomState.active ? `<p class="r">🔒 Sala cerrada por el docente.</p>` : ''}
+        ${!roomActiveCloud ? `<p class="r">🔒 Sala cerrada por el docente.</p>` : ''}
         ${L.g.map(x=>{
           const done = G.sc[x]!==undefined;
           return `
-            <button ${!roomState.active || done ? 'disabled':''} onclick="${x=='g0'?'startAtomInteractive(false)':(x=='g11'?'acro(false)':'startExam(\''+x+'\')')}">
+            <button ${!roomActiveCloud || done ? 'disabled':''} onclick="${x=='g0'?'startAtomInteractive(false)':(x=='g11'?'acro(false)':'startExam(\''+x+'\')')}">
               ${done ? '✔ Completado' : '📝 Evaluar:'} ${GN[x]} ${done ? '('+f1(G.sc[x])+')':''}
             </button>
           `;
@@ -713,7 +714,7 @@ function nextReadingQuizStep(levelIndex){
 
 function startAtomInteractive(practiceMode=false){
   isPractice = practiceMode;
-  if(!isPractice && roomState.active && G && G.sc['g0']!==undefined){
+  if(!isPractice && roomActiveCloud && G && G.sc['g0']!==undefined){
     alert("Ya realizaste el dibujo evaluado del átomo."); return;
   }
   if(!isPractice) activeExam = true;
@@ -849,9 +850,9 @@ function validateAtomBuild(){
   `;
 }
 
-function startExam(id){
-  checkRoomStatus();
-  if(!roomState.active){ alert("La sala está cerrada."); return; }
+async function startExam(id){
+  await checkCloudRoom();
+  if(!roomActiveCloud){ alert("La sala está cerrada."); return; }
   if(G.sc[id] !== undefined){ alert("Ya realizaste esta actividad evaluada."); return; }
   isPractice = false; activeExam = true; GI = id;
   Q = EVAL_QUESTIONS[id] || GEN_PRACTICE[id]();
@@ -938,7 +939,7 @@ function nx(){
 
 function acro(practiceMode=false){
   isPractice = practiceMode;
-  if(!isPractice && roomState.active && G && G.sc['g11']!==undefined){
+  if(!isPractice && roomActiveCloud && G && G.sc['g11']!==undefined){
     alert("Ya realizaste esta actividad evaluada."); return;
   }
   if(!isPractice) activeExam = true;
@@ -996,8 +997,9 @@ function loginDocente(){
   else if(p !== null) alert("Clave incorrecta.");
 }
 
-function panelDocente(){
-  ld(); checkRoomStatus();
+async function panelDocente(){
+  ld();
+  await checkCloudRoom();
   const ks=Object.keys(DB);
   app.innerHTML=`
     <div class="nav-docente">
@@ -1005,29 +1007,28 @@ function panelDocente(){
       <button class="s" onclick="reg()">Cerrar Panel</button>
     </div>
     <div class="c">
-      <h2>Control de la Sala</h2>
-      <p><b>Estado:</b> ${roomState.active ? '🟢 ABIERTA' : '🔴 CERRADA'}</p>
-      <button onclick="setRoomTimer(80)">Habilitar (80 min)</button>
-      <button onclick="setRoomTimer(40)">Próxima Clase (40 min)</button>
-      <button class="danger" onclick="closeRoom()">Cerrar Sala</button>
+      <h2>Control de la Sala (Nube)</h2>
+      <p><b>Estado actual:</b> ${roomActiveCloud ? '🟢 ABIERTA' : '🔴 CERRADA'}</p>
+      <button onclick="setCloudRoom(true)">Habilitar Sala</button>
+      <button class="danger" onclick="setCloudRoom(false)">Cerrar Sala</button>
     </div>
     <div class="c">
       <h2>Monitoreo y Rehabilitación de Estudiantes</h2>
       <table>
         <thead><tr><th>Estudiantes</th><th>Nota Final (÷ 6)</th><th>Salidas / Estado</th><th>Acción Docente</th></tr></thead>
         <tbody>
-          ${ks.length === 0 ? '<tr><td colspan="4">No hay registros guardados.</td></tr>' : ''}
+          ${ks.length === 0 ? '<tr><td colspan="4">No hay registros guardados localmente en este dispositivo.</td></tr>' : ''}
           ${ks.map(k => {
             const g = DB[k];
             const tot = calcTotalScoreStrict(g);
-            const needsReset = g.attempts > 0 && g.attempts < 3;
+            const needsReset = (g.attempts > 0) || (g.status && g.status.includes('Bloqueado')) || (g.status && g.status.includes('Desaprobado'));
             return `
               <tr>
                 <td><b>${g.m.join(', ')}</b><br><small>${g.cu||''}</small></td>
                 <td><b>${f1(tot)}</b></td>
                 <td>${g.status || 'En línea'}<br><small>Intentos de salida: ${g.attempts || 0}/3</small></td>
                 <td>
-                  ${needsReset ? `<button onclick="resetStudentAttempts('${k}')">Habilitar (${3 - (g.attempts||0)} rest.)</button>` : '—'}
+                  ${needsReset ? `<button onclick="resetStudentAttempts('${k}')">Rehabilitar Estudiante</button>` : '—'}
                 </td>
               </tr>
             `;
@@ -1048,18 +1049,19 @@ function resetStudentAttempts(key){
   }
 }
 
-function setRoomTimer(minutes){
-  roomState.active = true;
-  roomState.expiresAt = Date.now() + (minutes * 60 * 1000);
-  sv();
-  panelDocente();
-}
-
-function closeRoom(){
-  roomState.active = false;
-  roomState.expiresAt = null;
-  sv();
-  panelDocente();
+async function setCloudRoom(active){
+  try {
+    await fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "setRoom", active: active })
+    });
+    alert(active ? "🟢 Sala abierta exitosamente para todos los alumnos." : "🔴 Sala cerrada.");
+    panelDocente();
+  } catch(e) {
+    alert("Error al cambiar el estado de la sala.");
+  }
 }
 
 reg();
