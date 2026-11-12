@@ -829,7 +829,7 @@ function rehabilitarPorNombre(){
   const key=`${cu} - ${nom}`;
   if(DB[key]){DB[key].attempts=0;DB[key].status='Habilitado por el docente';sv()}
   else{
-    fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({cu,m:[nom],sc:{},finalScore:0,status:"Habilitado por el docente",attempts:0})});
+    fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"rehab",cu,m:[nom],sc:{},finalScore:0,status:"Habilitado por el docente",attempts:0})});
   }
   alert(`Solicitud de rehabilitación enviada para ${key}.`);
   panelDocente();
