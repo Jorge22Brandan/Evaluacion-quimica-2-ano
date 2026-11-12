@@ -29,31 +29,28 @@ button.s{background:transparent;color:var(--ac)}button.danger{background:var(--k
 .banner{background:var(--kob);border:1px solid var(--ko);color:var(--ko);padding:10px;border-radius:8px;margin-bottom:12px;font-weight:bold}
 .banner-info{background:var(--okb);border:1px solid var(--ok);color:var(--ok);padding:10px;border-radius:8px;margin-bottom:12px}
 .nav-docente{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-
-/* TABLA PERIÓDICA ESTILO CLÁSICO PAPEL */
+.rules li{margin:6px 0}
+/* TABLA PERIÓDICA COMPLETA */
 .ptable-container{overflow-x:auto;margin:12px 0;padding:8px;background:var(--cd);border-radius:8px;border:1px solid var(--bd)}
-.classic-grid{display:grid;grid-template-columns:repeat(18, 38px);grid-template-rows:repeat(7, 44px);gap:3px;min-width:720px;font-size:0.7rem;text-align:center}
-.pcell{border:1px solid var(--bd);border-radius:4px;padding:2px;cursor:pointer;background:var(--bg);user-select:none;display:flex;flex-direction:column;justify-content:center;align-items:center;transition:transform 0.1s}
-.pcell:hover{transform:scale(1.15);z-index:10;box-shadow:0 3px 8px rgba(0,0,0,0.25)}
+.classic-grid{display:grid;grid-template-columns:repeat(18,38px);grid-template-rows:repeat(7,44px) 14px 44px 44px;gap:3px;min-width:720px;font-size:0.7rem;text-align:center}
+.pcell{border:1px solid var(--bd);border-radius:4px;padding:2px;cursor:pointer;background:var(--bg);user-select:none;display:flex;flex-direction:column;justify-content:center;align-items:center;transition:transform .1s}
+.pcell:hover{transform:scale(1.15);z-index:10;box-shadow:0 3px 8px rgba(0,0,0,.25)}
 .pcell.empty{border:none;background:transparent;cursor:default;pointer-events:none}
-.pcell .num{font-size:0.55rem;color:var(--mu);line-height:1}
-.pcell .sym{font-size:0.85rem;font-weight:bold;line-height:1.1}
-.pcell.solid .sym{color:#2563eb}
-.pcell.liquid .sym{color:#dc2626}
-.pcell.gas .sym{color:#16a34a}
-.pcell.highlighted{background:#fef08a!important;border-color:#ca8a04!important}
-.ptable-legend{display:flex;gap:12px;font-size:0.8rem;margin-top:8px;flex-wrap:wrap}
-.leg-item{display:flex;align-items:center;gap:4px}
-
+.pcell.ph{font-size:.5rem;color:var(--mu);cursor:default;pointer-events:none}
+.pcell .num{font-size:.55rem;color:var(--mu);line-height:1}
+.pcell .sym{font-size:.85rem;font-weight:bold;line-height:1.1}
+.pcell.solid .sym{color:#2563eb}.pcell.liquid .sym{color:#dc2626}.pcell.gas .sym{color:#16a34a}
+.cl-m{background:rgba(234,179,8,.18)}.cl-n{background:rgba(236,72,153,.15)}.cl-x{background:rgba(20,184,166,.25)}.cl-g{background:rgba(168,85,247,.22)}
+.pcell.highlighted{outline:3px solid #ca8a04;z-index:5}
+.ptable-legend{display:flex;gap:12px;font-size:.8rem;margin-top:8px;flex-wrap:wrap}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid var(--bd);vertical-align:middle;margin-right:3px}
 /* CONSTRUCTOR DE ÁTOMO */
-.atom-canvas-container{text-align:center;position:relative}
+.atom-canvas-container{text-align:center}
 canvas#atomCanvas{background:#0f172a;border-radius:12px;cursor:pointer;touch-action:none;max-width:100%}
-.palette{display:flex;justify-content:center;gap:10px;margin:10px 0}
-.part-btn{padding:8px 12px;border-radius:20px;border:2px solid transparent;font-weight:bold;cursor:pointer}
-.part-btn.p-prot{background:#ef4444;color:#fff}
-.part-btn.p-neut{background:#94a3b8;color:#0f172a}
-.part-btn.p-elec{background:#3b82f6;color:#fff}
-.part-btn.active{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,0.5)}
+.palette{display:flex;justify-content:center;gap:10px;margin:10px 0;flex-wrap:wrap}
+.part-btn{padding:8px 12px;border-radius:20px;border:2px solid transparent;font-weight:bold}
+.part-btn.p-prot{background:#ef4444;color:#fff}.part-btn.p-neut{background:#94a3b8;color:#0f172a}.part-btn.p-elec{background:#3b82f6;color:#fff}
+.part-btn.active{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.5)}
 </style></head><body><main id="app"></main>
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpH_UNYuAkgFSmkHspanZPsitBIg-bvba-FEcNK-iWyGDg4Y5drlYB2eMpdCPHXgyooA/exec";
@@ -62,299 +59,325 @@ const $=s=>document.querySelector(s),app=$('#app');
 const sh=a=>[...a].sort(()=>Math.random()-.5),pick=(a,n)=>sh(a).slice(0,n),ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 const mk=(q,c,pool)=>{c=String(c);return{q,a:c,o:sh([c,...sh([...new Set(pool.map(String))].filter(x=>x!==c)).slice(0,3)])}};
 const mkw=(q,c,w)=>({q,a:c,o:sh([c,...w])});
+const H=s=>`<h2>${s}</h2>`, P=s=>`<p class="highlightable" onclick="toggleSub(this)">${s}</p>`;
 
-const E=[
-  ['H','Hidrógeno',1,1.008,1,1,'No metal','Gas'],['He','Helio',2,4.0,18,1,'Gas inerte','Gas'],
-  ['Li','Litio',3,6.94,1,2,'Metal','Sólido'],['Be','Berilio',4,9.01,2,2,'Metal','Sólido'],
-  ['B','Boro',5,10.81,13,2,'Metaloide','Sólido'],['C','Carbono',6,12.01,14,2,'No metal','Sólido'],
-  ['N','Nitrógeno',7,14.01,15,2,'No metal','Gas'],['O','Oxígeno',8,16.0,16,2,'No metal','Gas'],
-  ['F','Flúor',9,19.0,17,2,'No metal','Gas'],['Ne','Neón',10,20.18,18,2,'Gas inerte','Gas'],
-  ['Na','Sodio',11,22.99,1,3,'Metal','Sólido'],['Mg','Magnesio',12,24.31,2,3,'Metal','Sólido'],
-  ['Al','Aluminio',13,26.98,13,3,'Metal','Sólido'],['Si','Silicio',14,28.09,14,3,'Metaloide','Sólido'],
-  ['P','Fósforo',15,30.97,15,3,'No metal','Sólido'],['S','Azufre',16,32.06,16,3,'No metal','Sólido'],
-  ['Cl','Cloro',17,35.45,17,3,'No metal','Gas'],['Ar','Argón',18,39.95,18,3,'Gas inerte','Gas'],
-  ['K','Potasio',19,39.1,1,4,'Metal','Sólido'],['Ca','Calcio',20,40.08,2,4,'Metal','Sólido'],
-  ['Ga','Galio',31,69.72,13,4,'Metal','Sólido'],['Br','Bromo',35,79.9,17,4,'No metal','Líquido'],
-  ['Cs','Cesio',55,132.91,1,6,'Metal','Sólido'],['Hg','Mercurio',80,200.59,12,6,'Metal','Líquido'],
-  ['Fr','Francio',87,223,1,7,'Metal','Sólido']
-].map(x=>({s:x[0],n:x[1],Z:x[2],A:Math.round(x[3]),g:x[4],p:x[5],t:x[6],e:x[7]}));
+/* ===== TABLA PERIÓDICA COMPLETA (118 elementos) ===== */
+const RAW='H:Hidrógeno:1,He:Helio:4,Li:Litio:7,Be:Berilio:9,B:Boro:11,C:Carbono:12,N:Nitrógeno:14,O:Oxígeno:16,F:Flúor:19,Ne:Neón:20,Na:Sodio:23,Mg:Magnesio:24,Al:Aluminio:27,Si:Silicio:28,P:Fósforo:31,S:Azufre:32,Cl:Cloro:35,Ar:Argón:40,K:Potasio:39,Ca:Calcio:40,Sc:Escandio:45,Ti:Titanio:48,V:Vanadio:51,Cr:Cromo:52,Mn:Manganeso:55,Fe:Hierro:56,Co:Cobalto:59,Ni:Níquel:59,Cu:Cobre:64,Zn:Cinc:65,Ga:Galio:70,Ge:Germanio:73,As:Arsénico:75,Se:Selenio:79,Br:Bromo:80,Kr:Kriptón:84,Rb:Rubidio:85,Sr:Estroncio:88,Y:Itrio:89,Zr:Circonio:91,Nb:Niobio:93,Mo:Molibdeno:96,Tc:Tecnecio:98,Ru:Rutenio:101,Rh:Rodio:103,Pd:Paladio:106,Ag:Plata:108,Cd:Cadmio:112,In:Indio:115,Sn:Estaño:119,Sb:Antimonio:122,Te:Telurio:128,I:Yodo:127,Xe:Xenón:131,Cs:Cesio:133,Ba:Bario:137,La:Lantano:139,Ce:Cerio:140,Pr:Praseodimio:141,Nd:Neodimio:144,Pm:Prometio:145,Sm:Samario:150,Eu:Europio:152,Gd:Gadolinio:157,Tb:Terbio:159,Dy:Disprosio:163,Ho:Holmio:165,Er:Erbio:167,Tm:Tulio:169,Yb:Iterbio:173,Lu:Lutecio:175,Hf:Hafnio:178,Ta:Tántalo:181,W:Wolframio:184,Re:Renio:186,Os:Osmio:190,Ir:Iridio:192,Pt:Platino:195,Au:Oro:197,Hg:Mercurio:201,Tl:Talio:204,Pb:Plomo:207,Bi:Bismuto:209,Po:Polonio:209,At:Astato:210,Rn:Radón:222,Fr:Francio:223,Ra:Radio:226,Ac:Actinio:227,Th:Torio:232,Pa:Protactinio:231,U:Uranio:238,Np:Neptunio:237,Pu:Plutonio:244,Am:Americio:243,Cm:Curio:247,Bk:Berkelio:247,Cf:Californio:251,Es:Einstenio:252,Fm:Fermio:257,Md:Mendelevio:258,No:Nobelio:259,Lr:Lawrencio:266,Rf:Rutherfordio:267,Db:Dubnio:268,Sg:Seaborgio:269,Bh:Bohrio:270,Hs:Hassio:277,Mt:Meitnerio:278,Ds:Darmstatio:281,Rg:Roentgenio:282,Cn:Copernicio:285,Nh:Nihonio:286,Fl:Flerovio:289,Mc:Moscovio:290,Lv:Livermorio:293,Ts:Teneso:294,Og:Oganesón:294';
+const pos=Z=>Z==1?[1,1]:Z==2?[1,18]:Z<=4?[2,Z-2]:Z<=10?[2,Z+8]:Z<=12?[3,Z-10]:Z<=18?[3,Z]:Z<=36?[4,Z-18]:Z<=54?[5,Z-36]:Z<=56?[6,Z-54]:Z<=71?[9,Z-54]:Z<=86?[6,Z-68]:Z<=88?[7,Z-86]:Z<=103?[10,Z-86]:[7,Z-100];
+const GASES=[1,2,7,8,9,10,17,18,36,54,86],NOBLES=[2,10,18,36,54,86,118],METALOIDES=[5,14,32,33,51,52,85],NOMETALES=[1,6,7,8,9,15,16,17,34,35,53];
+const E=RAW.split(',').map((x,i)=>{
+  const [s,n,A]=x.split(':'),Z=i+1,[r,c]=pos(Z);
+  return {s,n,Z,A:+A,r,c,g:r>=9?null:c,p:r===9?6:r===10?7:r,
+    t:NOBLES.includes(Z)?'Gas inerte':METALOIDES.includes(Z)?'Metaloide':NOMETALES.includes(Z)?'No metal':'Metal',
+    e:GASES.includes(Z)?'Gas':(Z===35||Z===80)?'Líquido':'Sólido'};
+});
+// Subconjunto usado en los ejercicios
+const EX=E.filter(x=>x.Z<=20||[31,35,55,80,87].includes(x.Z));
+const EXS=EX.filter(x=>x.Z>=3&&x.Z<=20);
+const exc=L=>x=>!L.includes(x.Z);   // excluye de la práctica los elementos usados en la evaluación
+const EX1=EX.filter(exc([11,10,18,31,14,8]));   // Z entre 3 y 20 (configuraciones)
 
-const dstr = Z => {
-  if(Z===1) return '1s¹';
-  if(Z===3) return '1s² 2s¹';
-  if(Z===6) return '1s² 2s² 2p²';
-  if(Z===11) return '1s² 2s² 2p⁶ 3s¹';
-  if(Z===20) return '1s² 2s² 2p⁶ 3s² 3p⁶ 4s²';
-  return '1s² 2s² 2p⁶...';
-};
+const sup=n=>String(n).replace(/\d/g,d=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[d]);
+const cfg=Z=>{let r=Z,o=[];for(const[s,c]of[['1s',2],['2s',2],['2p',6],['3s',2],['3p',6],['4s',2],['3d',10],['4p',6]]){if(r<=0)break;const t=Math.min(r,c);o.push(s+sup(t));r-=t}return o.join(' ')};
+const lev=Z=>{let r=Z,o=[];for(const c of[2,8,8,8]){if(r<=0)break;const t=Math.min(r,c);o.push(t);r-=t}return o};
 
 const U=[['carbono-14','datar fósiles y restos arqueológicos'],['yodo-131','tratar enfermedades de la tiroides'],['cobalto-60','radioterapia y esterilización de instrumental'],['uranio-235','generar energía en centrales nucleares'],['tecnecio-99m','diagnóstico por imágenes médicas'],['helio','inflar globos y enfriar equipos'],['neón','carteles luminosos'],['argón','atmósfera protectora en soldadura'],['aluminio','fabricar latas y aviones'],['cloro','potabilizar el agua'],['litio','baterías recargables'],['silicio','chips y paneles solares'],['calcio','formación de huesos y dientes'],['nitrógeno','fabricar fertilizantes'],['oxígeno','respiración y soldadura']];
 
 const G5=[
-  ['El isótopo Carbono-14 tiene…', '6 protones y 8 neutrones', ['6 protones y 6 neutrones', '8 protones y 6 neutrones', '14 protones y 14 neutrones']],
-  ['Los isótopos de un mismo elemento coinciden en su…', 'Número atómico (Z)', ['Número másico (A)', 'Cantidad de neutrones', 'Masa atómica']],
-  ['¿Cuántos neutrones tiene el Uranio-235 (Z = 92)?', '143', ['92', '235', '327', '100']],
-  ['El isótopo del hidrógeno denominado Tritio posee:', '1 protón y 2 neutrones', ['1 protón y 0 neutrones', '1 protón y 1 neutrón', '2 protones y 1 neutrón']],
-  ['Dos átomos que poseen el mismo Z pero diferente A son:', 'Isótopos', ['Isómeros', 'Iones', 'Elementos distintos']]
+  ['El isótopo Carbono-14 tiene…','6 protones y 8 neutrones',['6 protones y 6 neutrones','8 protones y 6 neutrones','14 protones y 14 neutrones']],
+  ['Los isótopos de un mismo elemento coinciden en su…','Número atómico (Z)',['Número másico (A)','Cantidad de neutrones','Masa atómica']],
+  ['¿Cuántos neutrones tiene el Uranio-235 (Z = 92)?','143',['92','235','327','100']],
+  ['El isótopo del hidrógeno denominado Tritio posee:','1 protón y 2 neutrones',['1 protón y 0 neutrones','1 protón y 1 neutrón','2 protones y 1 neutrón']],
+  ['Dos átomos que poseen el mismo Z pero diferente A son:','Isótopos',['Isómeros','Iones','Elementos distintos']],
+  ['Un isótopo del cloro (Z = 17) con A = 37 se nombra:','Cloro-37',['Cloro-17','Cloro-20','Cloro-54']],
+  ['El átomo con 8 protones y 10 neutrones se nombra:','Oxígeno-18',['Oxígeno-8','Oxígeno-10','Neón-18']],
+  ['Para nombrar un isótopo se escribe el nombre del elemento seguido de su…','número másico (A)',['número atómico (Z)','cantidad de electrones','grupo']],
+  ['¿Cómo se escribe el isótopo Carbono-14 con símbolo?','C-14',['C-6','C-8','N-14']]
 ];
-
 const G9=[
-  ['En una red cristalina metálica, los electrones forman:', 'un mar de electrones', ['enlaces iónicos rígidos', 'moléculas aisladas', 'redes de neutrones']],
-  ['¿Qué tipo de cristal forma el Diamante (Carbono)?', 'Covalente reticular', ['Iónico', 'Metálico', 'Molecular']],
-  ['El cloruro de sodio (NaCl) constituye un ejemplo típico de cristal:', 'Iónico', ['Metálico', 'Molecular', 'Covalente']],
-  ['El hielo (H₂O sólida) forma cristales de tipo:', 'Molecular', ['Iónico', 'Metálico', 'Covalente reticular']],
-  ['Los cristales iónicos destacan por ser:', 'Duros, quebradizos y de alto punto de fusión', ['Blandos y deformables', 'Buenos conductores en estado sólido', 'Líquidos a temperatura ambiente']]
+  ['En una red cristalina metálica, los electrones forman:','un mar de electrones',['enlaces iónicos rígidos','moléculas aisladas','redes de neutrones']],
+  ['¿Qué tipo de cristal forma el Diamante (Carbono)?','Covalente reticular',['Iónico','Metálico','Molecular']],
+  ['El cloruro de sodio (NaCl) constituye un ejemplo típico de cristal:','Iónico',['Metálico','Molecular','Covalente']],
+  ['El hielo (H₂O sólida) forma cristales de tipo:','Molecular',['Iónico','Metálico','Covalente reticular']],
+  ['Los cristales iónicos destacan por ser:','Duros, quebradizos y de alto punto de fusión',['Blandos y deformables','Buenos conductores en estado sólido','Líquidos a temperatura ambiente']]
 ];
 
-const EVAL_QUESTIONS = {
-  g1: [
-    mk('¿Cómo se clasifica el sodio (Na)?', 'Metal', ['No metal', 'Gas inerte', 'Metaloide']),
-    mk('¿Cuáles son los dos únicos elementos que se presentan en estado líquido a temperatura ambiente (25 °C)?', 'Mercurio y bromo', ['Galio y cesio', 'Agua y alcohol', 'Cloro y mercurio']),
-    mk('¿A qué familia pertenecen el Neón y el Argón?', 'Gas inerte', ['Metales alcalinos', 'Halógenos', 'Metaloides']),
-    mk('¿Cómo se clasifica el Galio a 25 °C (temperatura ambiente estándar)?', 'Sólido', ['Líquido', 'Gas', 'Plasma']),
-    mk('¿Cómo se clasifica el Silicio (Si)?', 'Metaloide', ['Metal', 'No metal', 'Gas inerte'])
+const G5P=[
+  ['El isótopo Nitrógeno-15 tiene…','7 protones y 8 neutrones',['7 protones y 7 neutrones','8 protones y 7 neutrones','15 protones y 15 neutrones']],
+  ['¿Cuántos neutrones tiene el Calcio-44 (Z = 20)?','24',['20','44','64','4']],
+  ['El isótopo del hidrógeno denominado Deuterio posee:','1 protón y 1 neutrón',['1 protón y 0 neutrones','1 protón y 2 neutrones','2 protones y 1 neutrón']],
+  ['Un isótopo del magnesio (Z = 12) con A = 26 se nombra:','Magnesio-26',['Magnesio-12','Magnesio-14','Aluminio-26']],
+  ['El átomo con 19 protones y 20 neutrones se nombra:','Potasio-39',['Potasio-19','Potasio-20','Calcio-39']],
+  ['Dos átomos con igual Z y distinto A son:','Isótopos',['Isómeros','Iones','Elementos distintos']],
+  ['Para nombrar un isótopo se escribe el nombre del elemento seguido de su…','número másico (A)',['número atómico (Z)','cantidad de electrones','grupo']]
+];
+const G9P=[
+  ['El cobre (Cu) forma un cristal de tipo:','Metálico',['Iónico','Molecular','Covalente reticular']],
+  ['El azúcar de mesa (sacarosa) forma cristales de tipo:','Molecular',['Iónico','Metálico','Covalente reticular']],
+  ['El óxido de magnesio (MgO) forma un cristal de tipo:','Iónico',['Metálico','Molecular','Covalente reticular']],
+  ['Los cristales metálicos se caracterizan por:','Conducir la electricidad y ser maleables',['Ser quebradizos y aislantes','Tener bajo punto de fusión y ser blandos','Estar formados por moléculas']],
+  ['El CO₂ sólido (hielo seco) forma cristales de tipo:','Molecular',['Iónico','Metálico','Covalente reticular']]
+];
+const EVAL_QUESTIONS={
+  g1:[
+    mk('¿Cómo se clasifica el sodio (Na)?','Metal',['No metal','Gas inerte','Metaloide']),
+    mk('¿Cuáles son los dos únicos elementos que se presentan en estado líquido a temperatura ambiente (25 °C)?','Mercurio y bromo',['Galio y cesio','Agua y alcohol','Cloro y mercurio']),
+    mk('¿A qué familia pertenecen el Neón y el Argón?','Gas inerte',['Metales alcalinos','Halógenos','Metaloides']),
+    mk('¿Cómo se clasifica el Galio a 25 °C (temperatura ambiente estándar)?','Sólido',['Líquido','Gas','Plasma']),
+    mk('¿Cómo se clasifica el Silicio (Si)?','Metaloide',['Metal','No metal','Gas inerte']),
+    mk('En la tabla, el símbolo del Oxígeno se ve en color verde. Eso indica que a 25 °C es:','Gas',['Sólido','Líquido','Metaloide'])
   ],
-  g2: [
-    mk('¿En qué grupo se encuentra el Calcio (Ca)?', 2, [1, 13, 14, 18]),
-    mk('¿En qué período se ubica el Aluminio (Al)?', 3, [1, 2, 4, 5]),
-    mk('¿En qué grupo está el Oxígeno (O)?', 16, [14, 15, 17, 18]),
-    mk('¿Cuántos grupos tiene en total la tabla periódica?', 18, [7, 8, 32, 10]),
-    mk('¿En qué período se encuentra el Hidrógeno (H)?', 1, [2, 3, 4, 7])
+  g2:[
+    mk('¿En qué grupo se encuentra el Calcio (Ca)?',2,[1,13,14,18]),
+    mk('¿En qué período se ubica el Aluminio (Al)?',3,[1,2,4,5]),
+    mk('¿En qué grupo está el Oxígeno (O)?',16,[14,15,17,18]),
+    mk('¿Cuántos grupos tiene en total la tabla periódica?',18,[7,8,32,10]),
+    mk('¿En qué período se encuentra el Hidrógeno (H)?',1,[2,3,4,7])
   ],
-  g3: [
-    mk('Si un átomo de Carbono tiene Z = 6 y A = 12, ¿cuántos protones tiene?', 6, [12, 18, 0, 3]),
-    mk('Un átomo neutro de Sodio posee Z = 11. ¿Cuántos electrones orbitan en su corteza?', 11, [22, 12, 1, 10]),
-    mk('¿Cuántos neutrones posee un átomo de Flúor (Z = 9, A = 19)?', 10, [9, 19, 28, 1]),
-    mk('¿Qué partícula subatómica tiene carga eléctrica negativa?', 'El electrón', ['El protón', 'El neutrón', 'El positrón']),
-    mk('El núcleo de un átomo está compuesto por:', 'Protones y neutrones', ['Protones y electrones', 'Solo electrones', 'Neutrones y electrones'])
+  g3:[
+    mk('Si un átomo de Carbono tiene Z = 6 y A = 12, ¿cuántos protones tiene?',6,[12,18,0,3]),
+    mk('Un átomo neutro de Sodio posee Z = 11. ¿Cuántos electrones orbitan en su corteza?',11,[22,12,1,10]),
+    {q:'Escribí en qué zona del átomo se ubican los neutrones (núcleo o corteza).',a:'núcleo',w:['nucleo']},
+    mk('¿Qué partícula subatómica tiene carga eléctrica negativa?','El electrón',['El protón','El neutrón','El positrón']),
+    mk('El núcleo de un átomo está compuesto por:','Protones y neutrones',['Protones y electrones','Solo electrones','Neutrones y electrones']),
+    {q:'Escribí en qué zona del átomo se ubican los electrones (núcleo o corteza).',a:'corteza',w:['corteza','envoltura']}
   ],
-  g4: [
-    mk('¿Cuál es la distribución electrónica por niveles del Sodio (Z = 11)?', '2-8-1', ['2-9', '2-8-8-1', '11-0', '4-4-3']),
-    mk('¿Cuántos electrones admite como máximo el primer nivel de energía según la fórmula 2n²?', 2, [8, 18, 32, 6]),
-    mk('¿Cuántos electrones admite como máximo el segundo nivel de energía según la fórmula 2n²?', 8, [2, 18, 32, 10]),
-    mk('¿Cuál es la capacidad máxima teórica del tercer nivel de energía calculada por 2n²?', 18, [8, 32, 2, 10]),
-    mk('¿Cuántos niveles de energía ocupados tiene el Potasio (Z = 19)?', 4, [1, 3, 5, 2])
+  g4:[
+    mk('¿Cuál es la distribución electrónica por niveles del Sodio (Z = 11)?','2-8-1',['2-9','2-8-8-1','11-0','4-4-3']),
+    mk('¿Cuántos niveles de energía se conocen en los átomos?',7,[3,4,5,8]),
+    mk('¿Cuántos electrones admite como máximo el segundo nivel de energía según la fórmula 2n²?',8,[2,18,32,10]),
+    mk('¿Qué letra identifica al primer nivel de energía (el más cercano al núcleo)?','K',['L','M','N']),
+    mk('¿Cuántos niveles de energía ocupados tiene el Potasio (Z = 19)?',4,[1,3,5,2]),
+    {q:'Escribí la letra de la capa que corresponde al nivel n = 3.',a:'M',w:['m']}
   ],
-  g5: [
-    mkw('El isótopo Carbono-14 tiene…', '6 protones y 8 neutrones', ['6 protones y 6 neutrones', '8 protones y 6 neutrones', '14 protones y 14 neutrones']),
-    mkw('Los isótopos de un mismo elemento coinciden en su…', 'Número atómico (Z)', ['Número másico (A)', 'Cantidad de neutrones', 'Masa atómica']),
-    mkw('¿Cuántos neutrones tiene el Uranio-235 (Z = 92)?', '143', ['92', '235', '327', '100']),
-    mkw('El isótopo del hidrógeno denominado Tritio posee:', '1 protón y 2 neutrones', ['1 protón y 0 neutrones', '1 protón y 1 neutrón', '2 protones y 1 neutrón']),
-    mkw('Dos átomos que poseen el mismo Z pero diferente A son:', 'Isótopos', ['Isómeros', 'Iones', 'Elementos distintos'])
+  g5:[
+    mkw('El isótopo Carbono-14 tiene…','6 protones y 8 neutrones',['6 protones y 6 neutrones','8 protones y 6 neutrones','14 protones y 14 neutrones']),
+    mkw('Los isótopos de un mismo elemento coinciden en su…','Número atómico (Z)',['Número másico (A)','Cantidad de neutrones','Masa atómica']),
+    mkw('¿Cuántos neutrones tiene el Uranio-235 (Z = 92)?','143',['92','235','327','100']),
+    mkw('Un isótopo del cloro (Z = 17) con A = 37 se nombra:','Cloro-37',['Cloro-17','Cloro-20','Cloro-54']),
+    mkw('El átomo con 8 protones y 10 neutrones se nombra:','Oxígeno-18',['Oxígeno-8','Oxígeno-10','Neón-18'])
   ],
-  g6: [
-    mk('¿Qué isótopo radioactivo se utiliza para medir la antigüedad de fósiles?', 'carbono-14', ['yodo-131', 'uranio-235', 'cobalto-60']),
-    mk('¿Qué isótopo se emplea en el diagnóstico de enfermedades tiroideas?', 'yodo-131', ['carbono-14', 'tecnecio-99m', 'helio']),
-    mk('El Uranio-235 se aprovecha industrialmente para:', 'generar energía en centrales nucleares', ['potabilizar agua', 'fabricar baterías', 'carteles luminosos']),
-    mk('¿Qué elemento gas inerte se usa para inflar globos y enfriar equipos?', 'helio', ['argón', 'cloro', 'oxígeno']),
-    mk('El elemento silicio es ampliamente empleado en:', 'chips y paneles solares', ['fertilizantes', 'radioterapia', 'baterías recargables'])
+  g6:[
+    mk('¿Qué isótopo radioactivo se utiliza para medir la antigüedad de fósiles?','carbono-14',['yodo-131','uranio-235','cobalto-60']),
+    mk('¿Qué isótopo se emplea en el diagnóstico de enfermedades tiroideas?','yodo-131',['carbono-14','tecnecio-99m','helio']),
+    mk('El Uranio-235 se aprovecha industrialmente para:','generar energía en centrales nucleares',['potabilizar agua','fabricar baterías','carteles luminosos']),
+    mk('¿Qué elemento gas inerte se usa para inflar globos y enfriar equipos?','helio',['argón','cloro','oxígeno']),
+    mk('El elemento silicio es ampliamente empleado en:','chips y paneles solares',['fertilizantes','radioterapia','baterías recargables'])
   ],
-  g7: [
-    mk('¿Cuál es la configuración electrónica del Sodio (Z = 11)?', '1s² 2s² 2p⁶ 3s¹', ['1s² 2s² 2p⁷', '1s² 2s² 2p⁶ 3s²', '1s¹¹']),
-    mk('Según la regla de las diagonales, ¿qué subnivel se llena inmediatamente después del 2p?', '3s', ['2d', '3p', '4s']),
-    mk('¿Cuántos electrones entran como máximo en el subnivel p?', 6, [2, 10, 14, 8]),
-    mk('¿Cuántos electrones soporta como máximo un subnivel d?', 10, [2, 6, 14, 18]),
-    mk('¿Cuál es el último subnivel que ocupa el Calcio (Z = 20)?', '4s', ['3p', '3d', '4p'])
+  g7:[
+    mk('¿Cuál es la configuración electrónica del Sodio (Z = 11)?','1s² 2s² 2p⁶ 3s¹',['1s² 2s² 2p⁷','1s² 2s² 2p⁶ 3s²','1s¹¹']),
+    mk('Según la regla de las diagonales, ¿qué subnivel se llena inmediatamente después del 2p?','3s',['2d','3p','4s']),
+    mk('¿Cuántos electrones entran como máximo en el subnivel p?',6,[2,10,14,8]),
+    mk('¿Cuántos electrones soporta como máximo un subnivel d?',10,[2,6,14,18]),
+    mk('¿Cuál es el último subnivel que ocupa el Calcio (Z = 20)?','4s',['3p','3d','4p'])
   ],
-  g8: [
-    mk('¿Cuántos electrones de valencia tiene el Sodio (Grupo 1)?', 1, [2, 7, 8, 3]),
-    mk('¿Cuántos electrones de valencia posee el Cloro (Grupo 17)?', 7, [1, 2, 5, 8]),
-    mk('Un elemento con configuración terminada en 3s² 3p⁴ tiene cuántos electrones de valencia:', 6, [2, 4, 16, 8]),
-    mk('¿En qué grupo se ubica un elemento con 5 electrones de valencia en el período 3?', 15, [5, 13, 17, 2]),
-    mk('Los electrones de valencia son aquellos ubicados en:', 'el último nivel de energía', ['el núcleo atómico', 'el subnivel 1s', 'el primer nivel'])
+  g8:[
+    mk('¿Cuántos electrones de valencia tiene el Sodio (Grupo 1)?',1,[2,7,8,3]),
+    mk('¿Cuántos electrones de valencia posee el Cloro (Grupo 17)?',7,[1,2,5,8]),
+    mk('Un elemento con configuración terminada en 3s² 3p⁴ tiene cuántos electrones de valencia:',6,[2,4,16,8]),
+    mk('¿En qué grupo se ubica un elemento con 5 electrones de valencia en el período 3?',15,[5,13,17,2]),
+    mk('Los electrones de valencia son aquellos ubicados en:','el último nivel de energía',['el núcleo atómico','el subnivel 1s','el primer nivel'])
   ],
-  g9: [
-    mkw('En una red cristalina metálica, los electrones forman:', 'un mar de electrones', ['enlaces iónicos rígidos', 'moléculas aisladas', 'redes de neutrones']),
-    mkw('¿Qué tipo de cristal forma el Diamante (Carbono)?', 'Covalente reticular', ['Iónico', 'Metálico', 'Molecular']),
-    mkw('El cloruro de sodio (NaCl) constituye un ejemplo típico de cristal:', 'Iónico', ['Metálico', 'Molecular', 'Covalente']),
-    mkw('El hielo (H₂O sólida) forma cristales de tipo:', 'Molecular', ['Iónico', 'Metálico', 'Covalente reticular']),
-    mkw('Los cristales iónicos destacan por ser:', 'Duros, quebradizos y de alto punto de fusión', ['Blandos y deformables', 'Buenos conductores en estado sólido', 'Líquidos a temperatura ambiente'])
+  g9:G9.map(x=>mkw(x[0],x[1],x[2])),
+  g10:[
+    {q:'Escribí el símbolo químico del Sodio.',a:'Na',w:['na']},
+    {q:'Escribí el nombre del isótopo de hidrógeno con 1 protón y 1 neutrón.',a:'deuterio',w:['deuterio']},
+    {q:'Un átomo neutro tiene Z = 15 y A = 31. Escribí la cantidad de neutrones.',a:'16',w:['16']},
+    {q:'Escribí el nombre de la partícula atómica con carga negativa.',a:'electrón',w:['electron']},
+    {q:'Escribí cómo se llama el grupo 18 de la tabla periódica (dos palabras).',a:'gases inertes',w:['gases inertes','gases nobles']}
   ],
-  g10: [
-    {q: 'Escribí el símbolo químico del Sodio.', a: 'na', w: ['na', 'Na']},
-    {q: 'Escribí el nombre del isótopo de hidrógeno con 1 protón y 1 neutrón.', a: 'deuterio', w: ['deuterio']},
-    {q: 'Un átomo neutro tiene Z = 15 y A = 31. Escribí la cantidad de neutrones.', a: '16', w: ['16']},
-    {q: 'Escribí el nombre de la partícula atómica con carga negativa.', a: 'electron', w: ['electron', 'electrón']},
-    {q: 'Escribí cómo se llama el grupo 18 de la tabla periódica (dos palabras).', a: 'gases inertes', w: ['gases inertes', 'gases nobles']}
+  g12:[
+    mk('¿Qué partícula subatómica define el número atómico (Z)?','El protón',['El electrón','El neutrón','El positrón']),
+    mk('¿Cuál de los siguientes metales funde fácilmente a una temperatura ligeramente superior a los 28-29 °C (cercana al ambiente)?','Galio',['Hierro','Sodio','Cobre']),
+    mk('Los isótopos difieren entre sí en el número de:','Neutrones',['Protones','Electrones','Niveles']),
+    mk('¿Qué tipo de enlace o cristal presenta el NaCl?','Iónico',['Metálico','Covalente reticular','Molecular']),
+    mk('¿Cuántos electrones de valencia tiene el Oxígeno (Grupo 16)?',6,[2,8,16,4])
   ],
-  g12: [
-    mk('¿Qué partícula subatómica define el número atómico (Z)?', 'El protón', ['El electrón', 'El neutrón', 'El positrón']),
-    mk('¿Cuál de los siguientes metales funde fácilmente a una temperatura ligeramente superior a los 28-29 °C (cercana al ambiente)?', 'Galio', ['Hierro', 'Sodio', 'Cobre']),
-    mk('Los isótopos difieren entre sí en el número de:', 'Neutrones', ['Protones', 'Electrones', 'Niveles']),
-    mk('¿Qué tipo de enlace o cristal presenta el NaCl?', 'Iónico', ['Metálico', 'Covalente reticular', 'Molecular']),
-    mk('¿Cuántos electrones de valencia tiene el Oxígeno (Grupo 16)?', 6, [2, 8, 16, 4])
+  g14:[
+    {q:'Escribí la distribución por niveles del Magnesio (Z = 12). Formato: 2-8-1',a:'2-8-2',w:['2-8-2']},
+    {q:'Escribí la distribución por niveles del Cloro (Z = 17).',a:'2-8-7',w:['2-8-7']},
+    {q:'Escribí la distribución por niveles del Aluminio (Z = 13).',a:'2-8-3',w:['2-8-3']},
+    {q:'Escribí la distribución por niveles del Nitrógeno (Z = 7).',a:'2-5',w:['2-5']},
+    {q:'Escribí la distribución por niveles del Potasio (Z = 19).',a:'2-8-8-1',w:['2-8-8-1']}
   ]
 };
 
-const GEN_PRACTICE = {
-  g1: () => pick(E, 5).map(e => mk(`[Práctica] ¿En qué estado de agregación está el ${e.n} a temp. ambiente (25 °C)?`, e.e, ['Sólido', 'Líquido', 'Gas'])),
-  g2: () => pick(E, 5).map(e => mk(`[Práctica] ¿A qué período pertenece el elemento ${e.n} (Z=${e.Z})?`, e.p, [1, 2, 3, 4, 5, 6, 7])),
-  g3: () => pick(E, 5).map(e => mk(`[Práctica] El elemento ${e.n} tiene Z=${e.Z} y A=${e.A}. ¿Cuántos neutrones posee?`, e.A - e.Z, [e.Z, e.A, e.A + e.Z, e.A - e.Z + 2])),
-  g4: () => pick(E.filter(x=>x.Z>2), 5).map(e => mk(`[Práctica] ¿Cuántos electrones admite el nivel principal n=${e.p} según la fórmula 2n²?`, 2*(e.p**2), [2, 8, 18, 32])),
-  g5: () => pick(G5, 5).map(x => mkw(`[Práctica] ` + x[0], x[1], x[2])),
-  g6: () => pick(U, 5).map(u => mk(`[Práctica] ¿Qué elemento o isótopo se utiliza para ${u[1]}?`, u[0], U.map(x=>x[0]))),
-  g7: () => pick(E.filter(x=>x.Z>=3), 5).map(e => mk(`[Práctica] Configuración electrónica simplificada del ${e.n} (Z=${e.Z}):`, dstr(e.Z), [dstr(e.Z+1), dstr(e.Z-1), '1s² 2s²'])),
-  g8: () => pick(E, 5).map(e => mk(`[Práctica] El elemento ${e.n} pertenece al grupo ${e.g}. ¿Cuántos electrones de valencia tiene?`, e.g<=2?e.g:e.g-10, [1, 2, 3, 4, 5, 6, 7, 8])),
-  g9: () => pick(G9, 5).map(x => mkw(`[Práctica] ` + x[0], x[1], x[2])),
-  g10: () => [
-    {q: '[Práctica] Escribí el símbolo químico del Potasio.', a: 'k', w: ['k', 'K']},
-    {q: '[Práctica] Escribí el número atómico del Hidrógeno.', a: '1', w: ['1']},
-    {q: '[Práctica] Escribí la palabra para átomos con igual Z y distinto A.', a: 'isotopos', w: ['isotopos', 'isótopos']},
-    {q: '[Práctica] Escribí el nombre del isótopo H con 2 neutrones.', a: 'tritio', w: ['tritio']},
-    {q: '[Práctica] Escribí el símbolo del Helio.', a: 'he', w: ['he', 'He']}
+const PIST_ESTADO='Mirá el color del símbolo en la tabla: azul = sólido, rojo = líquido, verde = gas.';
+const PIST_CLASE='Mirá la posición y el color de fondo: metales a la izquierda (amarillo), no metales a la derecha (rosa), metaloides en la «escalera» (verde azulado), gases inertes en la última columna (violeta).';
+const GEN_PRACTICE={
+  g1:()=>sh([
+    ...pick(EX1,2).map(e=>({...mk(`[Práctica] ¿En qué estado está el ${e.n} a 25 °C?`,e.e,['Sólido','Líquido','Gas']),h:PIST_ESTADO})),
+    ...pick(EX1,2).map(e=>({...mk(`[Práctica] ¿Cómo se clasifica el ${e.n} (${e.s})?`,e.t,['Metal','No metal','Metaloide','Gas inerte']),h:PIST_CLASE})),
+    ...pick(EX1,1).map(e=>({...mk(`[Práctica] ¿De qué color se ve el símbolo del ${e.n} en la tabla?`,e.e==='Sólido'?'Azul':e.e==='Líquido'?'Rojo':'Verde',['Azul','Rojo','Verde']),h:'Azul = sólido, rojo = líquido, verde = gas.'}))
+  ]),
+  g2:()=>pick(EX.filter(x=>x.g&&exc([20,13,8,1])(x)),5).map((e,i)=>({...(i%2?mk(`[Práctica] ¿En qué grupo está el ${e.n} (${e.s})?`,e.g,[1,2,13,14,15,16,17,18]):mk(`[Práctica] ¿A qué período pertenece el ${e.n} (${e.s})?`,e.p,[1,2,3,4,5,6,7])),h:'Los períodos son las filas (1 a 7) y los grupos las columnas (1 a 18).'})),
+  g3:()=>pick([
+    {q:'[Práctica] Escribí dónde se ubican los protones (núcleo o corteza).',a:'núcleo',w:['nucleo'],h:'Protones y neutrones forman el núcleo.'},
+    {q:'[Práctica] Escribí el nombre de la partícula con carga positiva.',a:'protón',w:['proton'],h:'Se ubica en el núcleo y define el número atómico.'},
+    {q:'[Práctica] Escribí cómo se llama la zona central del átomo donde están los protones y los neutrones.',a:'núcleo',w:['nucleo'],h:'Es la parte central, densa y de carga positiva.'},
+    mk('[Práctica] ¿Qué carga tiene el neutrón?','Neutra (0)',['Positiva (+1)','Negativa (-1)','Variable']),
+    mk('[Práctica] ¿Qué partículas se encuentran en la corteza?','Electrones',['Protones','Neutrones','Protones y neutrones']),
+    mk('[Práctica] ¿Qué partícula define la identidad de un elemento?','El protón',['El electrón','El neutrón','Ninguna']),
+    ...pick(EX.filter(exc([6,9,11])),1).map(e=>mk(`[Práctica] El ${e.n} tiene Z=${e.Z} y A=${e.A}. ¿Cuántos neutrones posee?`,e.A-e.Z,[e.Z,e.A,e.A+e.Z,e.A-e.Z+2]))
+  ],5),
+  g4:()=>pick([
+    ...pick(EX.filter(x=>x.Z>2&&x.Z!==19&&x.Z!==11),2).map(e=>mk(`[Práctica] ¿Cuántos niveles de energía ocupa el ${e.n}?`,e.p,[1,2,3,4,5,6,7])),
+    {q:'[Práctica] Escribí la letra de la capa del nivel n = 2.',a:'L',w:['l'],h:'Las capas se nombran K, L, M, N, O, P, Q.'},
+    {q:'[Práctica] Escribí la letra de la capa del nivel n = 4.',a:'N',w:['n'],h:'Las capas se nombran K, L, M, N, O, P, Q.'},
+    {q:'[Práctica] Escribí la letra de la capa del nivel n = 5.',a:'O',w:['o'],h:'Las capas se nombran K, L, M, N, O, P, Q.'},
+    mk('[Práctica] ¿Cómo se llama el nivel más alejado de los 7 que se conocen?','Q (n = 7)',['K (n = 1)','P (n = 6)','N (n = 4)']),
+    mk('[Práctica] ¿En cuántos niveles se distribuyen los electrones del Azufre (período 3)?',3,[1,2,4,5])
+  ],5),
+  g5:()=>pick(G5P,5).map(x=>mkw(`[Práctica] `+x[0],x[1],x[2])),
+  g6:()=>pick(U.filter(u=>!['carbono-14','yodo-131','uranio-235','helio','silicio'].includes(u[0])),5).map(u=>mk(`[Práctica] ¿Qué elemento o isótopo se utiliza para ${u[1]}?`,u[0],U.map(x=>x[0]))),
+  g7:()=>pick(EXS.filter(exc([11,20])),5).map(e=>({...mk(`[Práctica] Configuración electrónica del ${e.n} (Z=${e.Z}):`,cfg(e.Z),[cfg(e.Z+1),cfg(e.Z-1),cfg(e.Z+2)]),h:'Llená en orden 1s, 2s, 2p, 3s, 3p, 4s… hasta usar los Z electrones.'})),
+  g8:()=>pick(EX.filter(x=>x.Z!==2&&x.Z<=20&&exc([11,17,15,16])(x)),5).map(e=>({...mk(`[Práctica] El elemento ${e.n} pertenece al grupo ${e.g}. ¿Cuántos electrones de valencia tiene?`,e.g<=2?e.g:e.g-10,[1,2,3,4,5,6,7,8]),h:'Grupos 1 y 2: igual al grupo. Grupos 13 a 18: grupo − 10.'})),
+  g9:()=>pick(G9P,5).map(x=>mkw(`[Práctica] `+x[0],x[1],x[2])),
+  g10:()=>[
+    {q:'[Práctica] Escribí el símbolo químico del Potasio.',a:'K',w:['k']},
+    {q:'[Práctica] Escribí el número atómico del Hidrógeno.',a:'1',w:['1']},
+    {q:'[Práctica] Escribí la palabra para átomos con igual Z y distinto A.',a:'isótopos',w:['isotopos']},
+    {q:'[Práctica] Escribí el nombre del isótopo H con 2 neutrones.',a:'tritio',w:['tritio']},
+    {q:'[Práctica] Escribí el símbolo del Helio.',a:'He',w:['he']}
   ],
-  g12: () => pick(G9.concat(G5), 5).map(x => mkw(`[Práctica Integradora] ` + x[0], x[1], x[2]))
+  g12:()=>pick(G9P.concat(G5P),5).map(x=>mkw(`[Práctica Integradora] `+x[0],x[1],x[2])),
+  g14:()=>pick(EXS.filter(exc([12,17,13,7,19])),5).map(e=>({q:`[Práctica] Escribí la distribución por niveles del ${e.n} (Z = ${e.Z}). Formato: 2-8-1`,a:lev(e.Z).join('-'),w:[lev(e.Z).join('-')],h:'Cada nivel se llena hasta su máximo: 2, luego 8, luego 8… El resto va al siguiente nivel.'}))
 };
 
-const GN={g0:'Dibujo del átomo',g1:'Clasificación y estados',g2:'Grupos y períodos',g3:'Partículas del átomo',g4:'Niveles de energía',g5:'Isótopos',g6:'Usos de los elementos',g7:'Regla de las diagonales',g8:'Electrones de valencia',g9:'Estructura cristalina',g10:'Escribí tu respuesta',g11:'Acróstico',g12:'Desafío integrador'};
+const GN={g0:'Dibujo del átomo',g1:'Clasificación y estados',g2:'Grupos y períodos',g3:'Partículas del átomo',g4:'Niveles de energía',g5:'Isótopos',g6:'Usos de los elementos',g7:'Regla de las diagonales',g8:'Electrones de valencia',g9:'Estructura cristalina',g10:'Escribí tu respuesta',g11:'Acróstico',g12:'Desafío integrador',g13:'Isótopos en el modelo',g14:'Distribución por niveles'};
 const nz=s=>String(s).toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
 
-const READ_QUESTIONS = [
-  [
-    {q: '¿Cuál de las siguientes opciones describe mejor a los metales?', a: 'Tienen brillo, conducen el calor y la electricidad', o: ['No brillan y son malos conductores', 'Tienen brillo, conducen el calor y la electricidad', 'Están en el grupo 18 y no reaccionan', 'Son todos gases a temperatura ambiente']},
-    {q: '¿Cuáles son los dos únicos elementos líquidos a temperatura ambiente estándar (25 °C)?', a: 'Mercurio y bromo', o: ['Solo el agua', 'Únicamente el mercurio y el cloro', 'Mercurio y bromo', 'Ningún elemento es líquido a esa temperatura']},
-    {q: '¿Cuántos grupos tiene en total la tabla periódica?', a: '18 grupos verticales', o: ['7 grupos verticales', '18 grupos verticales', '32 grupos verticales', '10 grupos verticales']}
-  ],
-  [
-    {q: '¿Qué representa el número atómico (Z)?', a: 'La cantidad de protones en el núcleo', o: ['La suma de protones y neutrones', 'La cantidad de protones en el núcleo', 'La cantidad total de electrones libres', 'El período del elemento']},
-    {q: '¿Cómo se determina la cantidad máxima de electrones por nivel de energía?', a: 'Multiplicando por 2 el nivel elevado al cuadrado (2n²)', o: ['Multiplicando Z por A', 'Sumando los protones y electrones', 'Dividiendo el período entre el grupo', 'Multiplicando por 2 el nivel elevado al cuadrado (2n²)']},
-    {q: '¿Cómo se calcula la cantidad de neutrones (N)?', a: 'A − Z (Número másico menos número atómico)', o: ['A + Z', 'A − Z (Número másico menos número atómico)', 'Z dividido 2', 'Igual a los electrones']}
-  ],
-  [
-    {q: '¿Qué define a los isótopos de un mismo elemento?', a: 'Igual Z y distinta cantidad de neutrones', o: ['Distinto Z y igual cantidad de neutrones', 'Igual Z y distinta cantidad de neutrones', 'Tener la misma masa atómica siempre', 'Ser elementos completamente diferentes']},
-    {q: '¿Para qué se utiliza principalmente el isótopo Carbono-14?', a: 'Para datar fósiles y restos arqueológicos', o: ['Para tratar la tiroides', 'Para datar fósiles y restos arqueológicos', 'Para generar energía nuclear', 'Para fabricar baterías de litio']},
-    {q: '¿Cómo se compone el núcleo del tritio (isótopo de hidrógeno)?', a: '1 protón y 2 neutrones', o: ['1 protón y 0 neutrones', '1 protón y 1 neutrón', '1 protón y 2 neutrones']}
-  ],
-  [
-    {q: '¿Cuántos electrones entran como máximo en el subnivel p?', a: '6 electrones', o: ['2 electrones', '6 electrones', '10 electrones', '14 electrones']},
-    {q: '¿Qué indican los electrones de valencia?', a: 'Los electrones del último nivel de energía', o: ['Los protones del núcleo', 'Los neutrones totales', 'Los electrones del último nivel de energía', 'Los electrones internos del átomo']},
-    {q: '¿En qué orden se llenan los subniveles según la regla de las diagonales?', a: '1s² 2s² 2p⁶ 3s²...', o: ['3d → 4p → 1s → 2s', '1s → 2p → 2s → 3p', '1s² 2s² 2p⁶ 3s²...', 'Aleatoriamente']}
-  ],
-  [
-    {q: '¿Cómo se le llama a la parte que se repite en una red cristalina?', a: 'Celda unitaria', o: ['Red molecular', 'Celda unitaria', 'Electrón libre', 'Ión aislado']},
-    {q: '¿Qué características tienen los cristales iónicos como el NaCl?', a: 'Son duros, quebradizos y de alto punto de fusión', o: ['Blandos y de bajo punto de fusión', 'Líquidos a temperatura ambiente', 'Formados solo por un mar de electrones libres', 'Son duros, quebradizos y de alto punto de fusión']},
-    {q: '¿Qué tipo de cristal forma el hierro (Fe)?', a: 'Cristal metálico', o: ['Cristal iónico', 'Cristal metálico', 'Cristal molecular', 'Cristal covalente reticular']}
-  ],
-  [
-    {q: '¿Cuál es el propósito del Nivel 6 general?', a: 'Repasar todos los temas vistos en los niveles anteriores', o: ['Aprender química orgánica avanzada', 'Realizar cálculos de física cuántica', 'Estudiar biología celular', 'Repasar todos los temas vistos en los niveles anteriores']}
-  ]
+/* ===== CONTROL DE LECTURA (7 niveles) ===== */
+const RQ=(q,a,w)=>({q,a,o:sh([a,...w])});
+const READ_QUESTIONS=[
+  [RQ('¿Cuál de las siguientes opciones describe mejor a los metales?','Tienen brillo, conducen el calor y la electricidad',['No brillan y son malos conductores','Están en el grupo 18 y no reaccionan','Son todos gases a temperatura ambiente']),
+   RQ('¿Cuáles son los dos únicos elementos líquidos a 25 °C?','Mercurio y bromo',['Solo el agua','Mercurio y cloro','Ningún elemento es líquido']),
+   RQ('En la tabla, ¿qué indica el color del símbolo?','El estado de agregación a 25 °C',['La cantidad de neutrones','El año de descubrimiento','El número de electrones'])],
+  [RQ('¿Qué representa el número atómico (Z)?','La cantidad de protones en el núcleo',['La suma de protones y neutrones','La cantidad total de electrones libres','El período del elemento']),
+   RQ('¿Cómo se determina la cantidad máxima de electrones por nivel?','Con la fórmula 2n²',['Multiplicando Z por A','Sumando protones y electrones','Dividiendo el período entre el grupo']),
+   RQ('¿Qué letra identifica al nivel n = 2?','L',['K','M','N'])],
+  [RQ('¿Qué define a los isótopos de un mismo elemento?','Igual Z y distinta cantidad de neutrones',['Distinto Z e igual cantidad de neutrones','Tener siempre la misma masa','Ser elementos diferentes']),
+   RQ('¿Cómo se nombra el isótopo del carbono con 6 protones y 8 neutrones?','Carbono-14',['Carbono-6','Carbono-8','Nitrógeno-14']),
+   RQ('¿Para qué se usa principalmente el Carbono-14?','Para datar fósiles y restos arqueológicos',['Para tratar la tiroides','Para generar energía nuclear','Para fabricar baterías'])],
+  [RQ('¿Cuántos electrones entran como máximo en el subnivel p?','6 electrones',['2 electrones','10 electrones','14 electrones']),
+   RQ('¿En qué orden se llenan los subniveles?','1s, 2s, 2p, 3s, 3p, 4s…',['3d, 4p, 1s, 2s','1s, 2p, 2s, 3p','Al azar']),
+   RQ('La configuración 1s² 2s² 2p⁶ 3s¹ corresponde al…','Sodio',['Litio','Potasio','Magnesio'])],
+  [RQ('¿Qué indican los electrones de valencia?','Los electrones del último nivel de energía',['Los protones del núcleo','Los neutrones totales','Los electrones internos']),
+   RQ('¿Cuántos electrones de valencia tiene un elemento del grupo 17?','7',['1','2','17']),
+   RQ('Los elementos de un mismo grupo tienen…','igual cantidad de electrones de valencia',['igual número atómico','igual cantidad de neutrones','igual masa'])],
+  [RQ('¿Cómo se llama la parte que se repite en una red cristalina?','Celda unitaria',['Red molecular','Electrón libre','Ión aislado']),
+   RQ('¿Qué características tienen los cristales iónicos como el NaCl?','Son duros, quebradizos y de alto punto de fusión',['Blandos y de bajo punto de fusión','Líquidos a temperatura ambiente','Formados por un mar de electrones']),
+   RQ('¿Qué tipo de cristal forma el hierro (Fe)?','Cristal metálico',['Cristal iónico','Cristal molecular','Cristal covalente reticular'])],
+  [RQ('¿Cuál es el propósito del Nivel 7?','Repasar todos los temas vistos en los niveles anteriores',['Aprender química orgánica avanzada','Estudiar biología celular','Realizar cálculos de física cuántica'])]
 ];
+
+/* ===== TEORÍA ===== */
+const TABLA_HTML=`
+<div class="ptable-container">
+  <div style="margin-bottom:8px;">
+    <button class="s" onclick="highlightBy(e=>e.g===1)">Grupo 1</button>
+    <button class="s" onclick="highlightBy(e=>e.g===18)">Grupo 18</button>
+    <button class="s" onclick="highlightBy(e=>e.p===3)">Período 3</button>
+    <button class="s" onclick="highlightBy(e=>e.t==='Metaloide')">Metaloides</button>
+    <button class="s" onclick="highlightBy(e=>e.e==='Líquido')">Líquidos</button>
+    <button class="s" onclick="clearHighlights()">Limpiar</button>
+  </div>
+  <div class="classic-grid" id="interactivePTable"></div>
+  <div class="ptable-legend">
+    <span><b style="color:#2563eb">Azul</b> sólido</span><span><b style="color:#dc2626">Rojo</b> líquido</span><span><b style="color:#16a34a">Verde</b> gas</span>
+    <span><i class="sw" style="background:rgba(234,179,8,.5)"></i>Metal</span><span><i class="sw" style="background:rgba(236,72,153,.5)"></i>No metal</span><span><i class="sw" style="background:rgba(20,184,166,.6)"></i>Metaloide</span><span><i class="sw" style="background:rgba(168,85,247,.6)"></i>Gas inerte</span>
+  </div>
+</div>
+<div id="elementDetail" class="banner-info" style="display:none;margin-top:8px;"></div>`;
 
 const LV=[
-{
-  t:'Nivel 1 · La tabla periódica',
-  g:['g1','g2'],
-  th:`
-    <h2>Clasificación y Familias de Elementos</h2>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Metales:</b> Poseen brillo característico, son maleables, dúctiles y excelentes conductores del calor y la electricidad. Se ubican a la izquierda y centro de la tabla (ej.: Sodio, Aluminio, Hierro).</p>
-    <p class="highlightable" onclick="toggleSub(this)"><b>No metales:</b> Carecen de brillo metálico, son malos conductores térmicos y eléctricos. Se sitúan a la derecha de la tabla (ej.: Carbono, Nitrógeno, Oxígeno, Cloro).</p>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Metaloides o Semimetales:</b> Presentan propiedades intermedias entre metales y no metales (ej.: Boro, Silicio, Germanio).</p>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Gases Inertes (Nobles):</b> Ubicados en el Grupo 18. Tienen su capa exterior completa de electrones, lo que les otorga una extrema estabilidad química (Helio, Neón, Argón).</p>
-    
-    <h2>Estados de Agregación a Temperatura Ambiente (25 °C)</h2>
-    <p class="highlightable" onclick="toggleSub(this)">La gran mayoría de los elementos químicos son sólidos a temperatura ambiente estándar (25 °C). Cabe destacar que a esta temperatura exacta <b>solo dos elementos son líquidos</b>: el <b>Mercurio (Hg)</b> y el <b>Bromo (Br)</b>. Elementos como el Galio (29,76 °C), el Cesio (28,44 °C) o el Francio funden a temperaturas muy cercanas, por lo que formalmente se clasifican como sólidos a 25 °C a pesar de fundirse fácilmente con el calor de la mano o en días cálidos.</p>
-    
-    <h2>Tabla Periódica Interactiva (Estilo Clásico)</h2>
-    <p class="mu">Hacé clic en los botones para resaltar filas (períodos) o columnas (grupos), o tocá cualquier elemento para ver sus datos.</p>
-    <div class="ptable-container">
-      <div style="margin-bottom:8px;">
-        <button class="s" onclick="highlightGroup(1)">Grupo 1 (Alcalinos)</button>
-        <button class="s" onclick="highlightGroup(18)">Grupo 18 (Gases Inertes)</button>
-        <button class="s" onclick="highlightPeriod(2)">Período 2</button>
-        <button class="s" onclick="clearHighlights()">Limpiar Destacados</button>
-      </div>
-      <div class="classic-grid" id="interactivePTable"></div>
-      <div class="ptable-legend">
-        <div class="leg-item"><span style="color:#2563eb;font-weight:bold">Azul:</span> Sólido</div>
-        <div class="leg-item"><span style="color:#dc2626;font-weight:bold">Rojo:</span> Líquido</div>
-        <div class="leg-item"><span style="color:#16a34a;font-weight:bold">Verde:</span> Gas</div>
-      </div>
-    </div>
-    <div id="elementDetail" class="banner-info" style="display:none;margin-top:8px;"></div>
-  `
-},
-{
-  t:'Nivel 2 · El átomo y su estructura',
-  g:['g0','g3','g4'],
-  th:`
-    <h2>La Estructura Atómica Fundamental</h2>
-    <p class="highlightable" onclick="toggleSub(this)">El átomo es la unidad fundamental de la materia. Consta de dos zonas principales: el <b>NÚCLEO CENTRAL</b> (denso y con carga positiva) y la <b>CORTEZA O ENVOLTURA</b> (espacio exterior donde orbitan los electrones en niveles de energía).</p>
-    
-    <h2>Partículas Subatómicas Fundamentales</h2>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Protones (p⁺):</b> Ubicados en el núcleo. Poseen carga eléctrica positiva (+1) y masa considerable (1 u.m.a.).</p>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Neutrones (n⁰):</b> Ubicados en el núcleo junto a los protones. No poseen carga eléctrica (neutros) y su masa es similar a la del protón.</p>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Electrones (e⁻):</b> Orbitan en la corteza atómica. Poseen carga negativa (-1) y una masa casi despreciable.</p>
-
-    <h2>Magnitudes Atómicas: Z y A</h2>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Número Atómico (Z):</b> Indica la cantidad exacta de protones en el núcleo. Define la identidad del elemento. En un átomo neutro, la cantidad de protones es igual a la de electrones (Z = p⁺ = e⁻).</p>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Número Másico (A):</b> Es la suma total de protones y neutrones del núcleo (A = Z + N). De aquí se deduce que los <b>Neutrones N = A − Z</b>.</p>
-
-    <h2>Capacidad Máxima de Electrones por Nivel (2n²)</h2>
-    <p class="highlightable" onclick="toggleSub(this)">La cantidad máxima de electrones que admite cada nivel energético principal se calcula multiplicando por 2 el nivel elevado al cuadrado (fórmula matemática 2n²), donde n es el número principal del nivel:</p>
-    <p class="highlightable" onclick="toggleSub(this)">• <b>Nivel 1 (n=1):</b> 2 × (1)² = 2 electrones como máximo.<br>• <b>Nivel 2 (n=2):</b> 2 × (2)² = 8 electrones como máximo.<br>• <b>Nivel 3 (n=3):</b> 2 × (3)² = 18 electrones como máximo.<br>• <b>Nivel 4 (n=4):</b> 2 × (4)² = 32 electrones como máximo.</p>
-  `
-},
-{
-  t:'Nivel 3 · Isótopos y usos de los elementos',
-  g:['g5','g6'],
-  th:`
-    <h2>¿Qué son los Isótopos?</h2>
-    <p class="highlightable" onclick="toggleSub(this)">Los <b>isótopos</b> son átomos de un mismo elemento químico que poseen el <b>mismo Número Atómico (Z)</b> pero <b>diferente Número Másico (A)</b>. Esto significa que tienen igual número de protones pero distinta cantidad de neutrones en su núcleo.</p>
-    <p class="highlightable" onclick="toggleSub(this)">Ejemplo: El Carbono posee tres isótopos principales: Carbono-12 (6p, 6n), Carbono-13 (6p, 7n) y Carbono-14 (6p, 8n).</p>
-
-    <h2>Isótopos del Hidrógeno</h2>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Protio:</b> 1 protón y 0 neutrones (el más abundante).</p>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Deuterio:</b> 1 protón y 1 neutrón.</p>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Tritio:</b> 1 protón y 2 neutrones (radioactivo).</p>
-
-    <h2>Aplicaciones de Isótopos y Elementos</h2>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Carbono-14:</b> Datación de restos orgánicos y fósiles arqueológicos.</p>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Yodo-131:</b> Tratamiento y diagnóstico de afecciones en la glándula tiroides.</p>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Uranio-235:</b> Combustible nuclear para la generación de energía eléctrica.</p>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Cobalto-60:</b> Radioterapia contra el cáncer y esterilización de material quirúrgico.</p>
-  `
-},
-{
-  t:'Nivel 4 · Configuración electrónica y valencia',
-  g:['g7','g8'],
-  th:`
-    <h2>Subniveles de Energía y Regla de las Diagonales</h2>
-    <p class="highlightable" onclick="toggleSub(this)">Cada nivel energético se subdivide en orbitales de menor energía llamados subniveles: <b>s</b> (máximo 2 e⁻), <b>p</b> (máximo 6 e⁻), <b>d</b> (máximo 10 e⁻) y <b>f</b> (máximo 14 e⁻).</p>
-    <p class="highlightable" onclick="toggleSub(this)">El orden de llenado responde a la Regla de las Diagonales: 1s² → 2s² → 2p⁶ → 3s² → 3p⁶ → 4s² → 3d¹⁰...</p>
-
-    <h2>Electrones de Valencia</h2>
-    <p class="highlightable" onclick="toggleSub(this)">Son los electrones que se encuentran en el <b>nivel de energía más externo (última capa)</b>. Son los responsables directos de las propiedades químicas y de la formación de enlaces.</p>
-    <p class="highlightable" onclick="toggleSub(this)">Para los elementos representativos: Grupo 1 = 1 e⁻ de valencia, Grupo 2 = 2 e⁻, Grupo 13 = 3 e⁻, Grupo 14 = 4 e⁻, Grupo 15 = 5 e⁻, Grupo 16 = 6 e⁻, Grupo 17 = 7 e⁻, Grupo 18 = 8 e⁻ (salvo el Helio que posee 2).</p>
-  `
-},
-{
-  t:'Nivel 5 · Estructura cristalina y respuestas escritas',
-  g:['g9','g10'],
-  th:`
-    <h2>Introducción a la Estructura Cristalina</h2>
-    <p class="highlightable" onclick="toggleSub(this)">En la naturaleza, la gran mayoría de los sólidos puros adoptan una estructura ordenada y geométrica conocida como estado cristalino, diferenciándose de los sólidos amorfos como el vidrio.</p>
-    <p class="highlightable" onclick="toggleSub(this)">Las partículas constituyentes (átomos, iones o moléculas) se ordenan rígidamente en el espacio tridimensional formando una estructura periódica denominada <b>red cristalina</b>, cuya mínima porción representativa que se repite en todas las direcciones es la <b>celda unitaria</b>.</p>
-    
-    <h2>Clasificación Principal de los Cristales</h2>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Cristales Iónicos:</b> Formados por la atracción electrostática entre iones positivos y negativos (como el cloruro de sodio o NaCl). Son duros, quebradizos y presentan elevados puntos de fusión.</p>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Cristales Metálicos:</b> Compuestos por cationes metálicos inmersos en un mar de electrones libres deslocalizados (como el Hierro o el Cobre), lo que les otorga excelente conductividad térmica y eléctrica, además de maleabilidad.</p>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Cristales Covalentes Reticulares:</b> Átomos unidos por redes tridimensionales de enlaces covalentes muy fuertes (ejemplo clásico: el diamante), caracterizándose por una extrema dureza.</p>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Cristales Moleculares:</b> Moléculas neutras unidas por fuerzas intermoleculares débiles (como el hielo de agua o el dióxido de carbono sólido), caracterizados por puntos de fusión más bajos.</p>
-  `
-},
-{
-  t:'Nivel 6 · Nivel general integrador',
-  g:['g11','g12'],
-  th:`
-    <h2>Integración de Conceptos Químicos Fundamentales</h2>
-    <p class="highlightable" onclick="toggleSub(this)">Este nivel final reúne y consolida los saberes construidos a lo largo de todo el trayecto de aprendizaje sobre la materia y su organización microscópica.</p>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Clasificación periódica:</b> Reconocimiento de metales, no metales, metaloides y gases inertes, interpretando la ubicación en grupos (columnas) y períodos (filas).</p>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Modelo atómico actual:</b> Comprensión profunda de la dualidad núcleo-corteza, el cálculo riguroso del número atómico (Z), el número másico (A) y la determinación de neutrones.</p>
-    <p class="highlightable" onclick="toggleSub(this)"><b>Configuraciones y Enlaces:</b> Aplicación de la regla de las diagonales para la distribución electrónica en subniveles, identificación de electrones de valencia y análisis de estructuras cristalinas en sólidos.</p>
-  `
-}
+{t:'Nivel 1 · La tabla periódica',g:['g1','g2'],th:
+  H('Clasificación y familias de elementos')+
+  P('<b>Metales:</b> tienen brillo, son maleables, dúctiles y buenos conductores del calor y la electricidad. Están a la izquierda y al centro de la tabla (Sodio, Aluminio, Hierro).')+
+  P('<b>No metales:</b> sin brillo metálico y malos conductores. Están a la derecha (Carbono, Nitrógeno, Oxígeno, Cloro). El Hidrógeno también es un no metal.')+
+  P('<b>Metaloides:</b> propiedades intermedias entre metales y no metales (Boro, Silicio, Germanio). Forman una «escalera» entre ambos grupos.')+
+  P('<b>Gases inertes (nobles):</b> Grupo 18. Tienen su última capa completa, por eso son muy estables (Helio, Neón, Argón).')+
+  H('Estados de agregación a 25 °C')+
+  P('La mayoría de los elementos son sólidos. A 25 °C <b>solo dos son líquidos</b>: <b>Mercurio (Hg)</b> y <b>Bromo (Br)</b>. Once son gases: H, He, N, O, F, Ne, Cl, Ar, Kr, Xe y Rn. El Galio (29,76 °C), el Cesio (28,44 °C) y el Francio funden cerca de la temperatura ambiente, pero a 25 °C siguen siendo sólidos.')+
+  H('¿Cómo leer la tabla? Colores y posición')+
+  P('<b>Color del símbolo = estado a 25 °C:</b> <span style="color:#2563eb"><b>azul</b></span> sólido, <span style="color:#dc2626"><b>rojo</b></span> líquido, <span style="color:#16a34a"><b>verde</b></span> gas.')+
+  P('<b>Color de fondo = clasificación:</b> amarillo metales, rosa no metales, verde azulado metaloides y violeta gases inertes.')+
+  P('<b>Posición:</b> los metales ocupan la izquierda y el centro; los no metales, la derecha; los metaloides están en la diagonal que los separa (B, Si, Ge, As, Sb, Te, At); los gases inertes están en la última columna.')+
+  H('Períodos y grupos')+
+  P('Los <b>períodos</b> son las 7 filas horizontales; los <b>grupos</b> son las 18 columnas verticales. Los elementos de un mismo grupo tienen propiedades parecidas. Las dos filas de abajo (lantánidos y actínidos) pertenecen a los períodos 6 y 7.')+
+  H('Tabla periódica interactiva (118 elementos)')+
+  '<p class="mu">Tocá cualquier elemento para ver sus datos, o usá los botones para resaltar.</p>'+TABLA_HTML},
+{t:'Nivel 2 · El átomo y su estructura',g:['g0','g3','g4'],th:
+  H('La estructura del átomo')+
+  P('El átomo tiene dos zonas: el <b>núcleo</b> (centro, denso y positivo) y la <b>corteza</b> (espacio exterior donde giran los electrones).')+
+  H('Partículas subatómicas y su ubicación')+
+  P('<b>Protones (p⁺):</b> se ubican en el <b>núcleo</b>. Carga +1, masa 1 u.')+
+  P('<b>Neutrones (n⁰):</b> se ubican en el <b>núcleo</b>. Sin carga, masa similar a la del protón.')+
+  P('<b>Electrones (e⁻):</b> se ubican en la <b>corteza</b>. Carga −1, masa casi despreciable.')+
+  H('Magnitudes atómicas')+
+  P('<b>Número atómico (Z):</b> cantidad de protones. Identifica al elemento. En un átomo neutro, Z = p⁺ = e⁻.')+
+  P('<b>Número másico (A):</b> protones + neutrones (A = Z + N), por lo tanto <b>N = A − Z</b>.')+
+  H('Niveles de energía y capas')+
+  P('Los electrones se distribuyen en <b>niveles de energía</b> (n = 1, 2, 3…) que se nombran con letras: <b>K</b> (n=1), <b>L</b> (n=2), <b>M</b> (n=3), <b>N</b> (n=4), <b>O</b> (5), <b>P</b> (6) y <b>Q</b> (7). Se conocen <b>7 niveles</b> y el K es el más cercano al núcleo.')+
+  P('El <b>período</b> de un elemento indica cuántos niveles ocupa: el Sodio (período 3) tiene 3 niveles (K, L y M).')+
+  P('Capacidad máxima de cada nivel: 2n². <b>K:</b> 2 · <b>L:</b> 8 · <b>M:</b> 18 · <b>N:</b> 32 electrones.')},
+{t:'Nivel 3 · Isótopos y usos de los elementos',g:['g5','g6','g13'],th:
+  H('¿Qué son los isótopos?')+
+  P('Son átomos del mismo elemento con el <b>mismo Z</b> pero <b>distinto A</b>: igual cantidad de protones y distinta cantidad de neutrones.')+
+  P('Ejemplo: Carbono-12 (6p, 6n), Carbono-13 (6p, 7n) y Carbono-14 (6p, 8n).')+
+  H('¿Cómo se nombran los isótopos?')+
+  P('Se escribe el <b>nombre del elemento seguido del número másico (A)</b>: Carbono-14, Uranio-235, Cloro-37. También con símbolo: C-14 o ¹⁴C.')+
+  P('Para nombrar un isótopo: 1) con Z buscás el elemento en la tabla; 2) sumás protones + neutrones para obtener A. Ejemplo: 8 protones y 10 neutrones → Z = 8 (Oxígeno), A = 18 → <b>Oxígeno-18</b>.')+
+  H('Isótopos del hidrógeno (tienen nombre propio)')+
+  P('<b>Protio</b> (Hidrógeno-1): 1 protón y 0 neutrones. <b>Deuterio</b> (Hidrógeno-2): 1 protón y 1 neutrón. <b>Tritio</b> (Hidrógeno-3): 1 protón y 2 neutrones (radioactivo).')+
+  H('Ubicar las partículas en un modelo')+
+  P('Se dibuja el <b>núcleo</b> con los protones y neutrones, y los electrones (igual cantidad que los protones) en la <b>corteza</b>. Dos isótopos tienen igual cantidad de electrones y protones, pero distinto número de neutrones.')+
+  H('Aplicaciones')+
+  P('<b>Carbono-14:</b> datación de fósiles y restos arqueológicos. <b>Yodo-131:</b> tiroides. <b>Uranio-235:</b> energía nuclear. <b>Cobalto-60:</b> radioterapia y esterilización.')},
+{t:'Nivel 4 · Configuración electrónica',g:['g7','g14'],th:
+  H('Subniveles de energía')+
+  P('Cada nivel se divide en subniveles: <b>s</b> (máx. 2 e⁻), <b>p</b> (6 e⁻), <b>d</b> (10 e⁻) y <b>f</b> (14 e⁻).')+
+  H('Regla de las diagonales')+
+  P('El orden de llenado es: 1s → 2s → 2p → 3s → 3p → 4s → 3d → 4p… Se completa cada subnivel antes de pasar al siguiente.')+
+  H('Cómo escribir una configuración')+
+  P('Se reparten los Z electrones siguiendo ese orden y se anota el exponente de cada subnivel. Sodio (Z=11): <b>1s² 2s² 2p⁶ 3s¹</b>. Cloro (Z=17): <b>1s² 2s² 2p⁶ 3s² 3p⁵</b>.')+
+  H('Distribución por niveles')+
+  P('Sumando los subniveles de cada nivel se obtiene la distribución por niveles: Sodio <b>2-8-1</b>, Cloro <b>2-8-7</b>, Potasio <b>2-8-8-1</b>. Hasta el Calcio (Z = 20) los niveles se llenan con 2, 8, 8 y el resto en el cuarto.')+
+  P('El <b>último nivel ocupado</b> coincide con el período del elemento.')},
+{t:'Nivel 5 · Electrones de valencia',g:['g8'],th:
+  H('Electrones de valencia')+
+  P('Son los electrones del <b>nivel de energía más externo</b>. Determinan las propiedades químicas y la formación de enlaces.')+
+  H('Cómo hallarlos con la tabla')+
+  P('Grupos 1 y 2: valencia = número de grupo. Grupos 13 a 18: valencia = grupo − 10. Así: Grupo 13 = 3 e⁻, 14 = 4, 15 = 5, 16 = 6, 17 = 7, 18 = 8 (el Helio tiene 2).')+
+  P('Con la distribución por niveles es el último número: Cloro 2-8-<b>7</b> → 7 electrones de valencia.')+
+  P('Los elementos de un mismo grupo tienen igual cantidad de electrones de valencia y por eso propiedades parecidas. Ejemplo: Azufre (Z=16) → 2-8-6, 6 e⁻ de valencia, grupo 16, período 3.')},
+{t:'Nivel 6 · Estructura cristalina',g:['g9','g10'],th:
+  H('Estructura cristalina')+
+  P('La mayoría de los sólidos puros tienen estructura ordenada (estado cristalino), a diferencia de los sólidos amorfos como el vidrio.')+
+  P('Las partículas forman una <b>red cristalina</b> y su mínima porción repetida es la <b>celda unitaria</b>.')+
+  H('Tipos de cristales')+
+  P('<b>Iónicos:</b> iones positivos y negativos (NaCl). Duros, quebradizos y de alto punto de fusión.')+
+  P('<b>Metálicos:</b> cationes en un mar de electrones libres (Fe, Cu). Conducen calor y electricidad y son maleables.')+
+  P('<b>Covalentes reticulares:</b> red tridimensional de enlaces covalentes (diamante). Extremadamente duros.')+
+  P('<b>Moleculares:</b> moléculas unidas por fuerzas débiles (hielo, CO₂ sólido). Bajo punto de fusión.')},
+{t:'Nivel 7 · Nivel general integrador',g:['g11','g12'],th:
+  H('Integración de conceptos')+
+  P('Este nivel reúne todo lo aprendido sobre la materia y su organización microscópica.')+
+  P('<b>Tabla periódica:</b> metales, no metales, metaloides y gases inertes; grupos, períodos y estados a 25 °C.')+
+  P('<b>Átomo:</b> núcleo y corteza, Z, A, neutrones, niveles de energía (K, L, M…) e isótopos con su nombre.')+
+  P('<b>Configuración y enlaces:</b> subniveles, regla de las diagonales, distribución por niveles, electrones de valencia y tipos de cristales.')}
 ];
 
+const ACP=[
+  ['P','PROTON','Partícula con carga positiva que se ubica en el núcleo'],
+  ['N','NUCLEO','Zona central del átomo donde están los protones y los neutrones'],
+  ['C','CORTEZA','Zona externa del átomo donde giran los electrones'],
+  ['G','GRUPO','Columna vertical de la tabla periódica'],
+  ['P','PERIODO','Fila horizontal de la tabla periódica'],
+  ['C','CRISTAL','Sólido cuyas partículas forman una red ordenada'],
+  ['H','HELIO','Gas inerte con número atómico 2']
+];
+let ACL=[];
 const AC=[
   ['M','METAL','Elemento con brillo y gran conductividad térmica y eléctrica'],
   ['E','ELECTRON','Partícula subatómica con carga eléctrica negativa'],
@@ -365,116 +388,65 @@ const AC=[
   ['V','VALENCIA','Electrones situados en la última capa externa']
 ];
 
-let DB={}, G=null, tm=null, Q=[], k=0, sc=0, GI='', LI=0, isPractice=false, activeExam=false;
-let roomActiveCloud = false;
-let highlightedCount = 0;
-let readingQuizStep = 0;
-let readingQuizScore = 0;
+/* ===== ESTADO ===== */
+let DB={},G=null,tm=null,Q=[],k=0,sc=0,GI='',LI=0,isPractice=false,activeExam=false;
+let roomActiveCloud=false,highlightedCount=0,readingQuizStep=0,readingQuizScore=0;
+let part='prot',placed=[],AT={s:[],i:0,r:[]};
 
-let activeParticle = 'prot';
-let placedParticles = [];
-const ATOM_TARGET = { name: 'Carbono (C)', Z: 6, A: 12, p: 6, n: 6, e: 6 };
-
-const ld = () => {
-  try { DB = JSON.parse(localStorage.getItem('tp2_db') || '{}'); } catch(e) { DB = {}; }
-};
-
-const sv = () => {
-  try { localStorage.setItem('tp2_db', JSON.stringify(DB)); } catch(e) { }
-  if (G && SCRIPT_URL) {
-    const payload = {
-      ...G,
-      finalScore: calcTotalScoreStrict(G)
-    };
-    fetch(SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    }).catch(err => console.log("Error al sincronizar con Sheets:", err));
+const ld=()=>{try{DB=JSON.parse(localStorage.getItem('tp2_db')||'{}')}catch(e){DB={}}};
+const sv=()=>{
+  try{localStorage.setItem('tp2_db',JSON.stringify(DB))}catch(e){}
+  if(G&&SCRIPT_URL){
+    fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({...G,finalScore:calcTotalScoreStrict(G),lv:lvProm(G)})}).catch(err=>console.log("Error al sincronizar con Sheets:",err));
   }
 };
-
-const checkCloudRoom = async () => {
-  try {
-    const res = await fetch(SCRIPT_URL);
-    const data = await res.json();
-    roomActiveCloud = !!data.roomActive;
-  } catch(e) {
-    roomActiveCloud = false;
-  }
+const checkCloudRoom=async()=>{
+  try{const res=await fetch(SCRIPT_URL);const data=await res.json();roomActiveCloud=!!data.roomActive}catch(e){roomActiveCloud=false}
 };
 
 const f1=x=>(Math.round(x*10)/10).toString().replace('.',',');
 const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
-const sc2=id=>G && G.sc ? G.sc[id] : undefined;
-
-const lavg=i=>{
-  if(!G) return null;
-  const s=LV[i].g.map(sc2);
-  return s.every(x=>x!==undefined) ? mean(s) : null;
+const sc2=id=>G&&G.sc?G.sc[id]:undefined;
+const lavg=i=>{if(!G)return null;const s=LV[i].g.map(sc2);return s.every(x=>x!==undefined)?mean(s):null};
+const calcTotalScoreStrict=o=>{
+  let t=0;
+  LV.forEach(L=>{const s=L.g.map(g=>o.sc?o.sc[g]:undefined);if(s.every(x=>x!==undefined))t+=mean(s)});
+  return t/LV.length;
 };
 
-const calcTotalScoreStrict = (groupObj) => {
-  let sumAverages = 0;
-  LV.forEach((L, i) => {
-    const scores = L.g.map(gId => groupObj.sc ? groupObj.sc[gId] : undefined);
-    if(scores.every(x => x !== undefined)){
-      sumAverages += mean(scores);
-    } else {
-      sumAverages += 0;
-    }
-  });
-  return sumAverages / 6;
-};
+// Promedio de cada nivel (solo si el nivel tiene todas sus actividades hechas); es lo que se envía a Google Sheets
+const lvProm=o=>LV.map(L=>{const v=L.g.map(g=>o.sc?o.sc[g]:undefined);return v.every(x=>x!==undefined)?Math.round(mean(v)*100)/100:null});
 
-window.addEventListener('visibilitychange', () => {
-  if (document.hidden && activeExam && G && !isPractice) {
-    penalizeStudent("Se detectó que minimizaste o saliste de la pantalla durante la evaluación.");
-  }
-});
-window.addEventListener('blur', () => {
-  if (activeExam && G && !isPractice) {
-    penalizeStudent("Se detectó un cambio de ventana o aplicación durante la evaluación.");
-  }
-});
+/* ===== BLOQUEO POR SALIR DE LA PANTALLA ===== */
+window.addEventListener('visibilitychange',()=>{if(document.hidden&&activeExam&&G&&!isPractice)penalizeStudent("Se detectó que minimizaste o saliste de la pantalla durante la evaluación.")});
+window.addEventListener('blur',()=>{if(activeExam&&G&&!isPractice)penalizeStudent("Se detectó un cambio de ventana o aplicación durante la evaluación.")});
 
-function penalizeStudent(reason) {
-  if(!G) return;
-  G.attempts = (G.attempts || 0) + 1;
-  activeExam = false;
-  
-  if(G.attempts >= 3){
-    G.sc[GI] = 1;
-    G.status = "Desaprobado definitivamente (3 salidas)";
-    sv();
-    alert(`⚠️ EVALUACIÓN BLOQUEADA DEFINITIVAMENTE (${reason})\n\nConsumiste tus 3 oportunidades de reintento. Quedas desaprobado con nota 1.`);
-    home();
-  } else {
-    G.status = `Bloqueado temporalmente (Intento ${G.attempts}/3)`;
-    sv();
-    alert(`⚠️ ALERTA (${reason})\n\nSaliste o minimizaste la pantalla (Aviso ${G.attempts} de 3).\nEl docente deberá habilitarte nuevamente.`);
-    home();
+function penalizeStudent(reason){
+  if(!G)return;
+  G.attempts=(G.attempts||0)+1;activeExam=false;
+  if(G.attempts>=3){
+    G.sc[GI]=1;G.status="Bloqueado definitivamente (3 avisos)";sv();
+    alert(`⚠️ EVALUACIÓN BLOQUEADA DEFINITIVAMENTE\n${reason}\n\nAcumulaste 3 avisos. Esta actividad queda con nota 1 y no podés realizar más evaluaciones.`);
+  }else{
+    G.status=`Aviso ${G.attempts} de 3`;sv();
+    alert(`⚠️ AVISO ${G.attempts} DE 3\n${reason}\n\nLa evaluación se interrumpió. Podés volver a empezar esta actividad, pero te quedan ${3-G.attempts} aviso(s). Al tercero se bloquea automáticamente y quedás con nota 1.`);
   }
+  home();
+}
+function blocked(){
+  if(G&&(G.attempts||0)>=3){alert('Tu evaluación está bloqueada: saliste 3 veces de la pantalla durante una evaluación.');return true}
+  return false;
 }
 
+/* ===== PANTALLAS ===== */
 async function reg(){
-  clearInterval(tm); G=null; activeExam=false; ld();
+  clearInterval(tm);G=null;activeExam=false;ld();
   await checkCloudRoom();
   const ks=Object.keys(DB);
   app.innerHTML=`
-    <div class="nav-docente">
-      <h1>⚗️ Laboratorio de la Tabla Periódica</h1>
-      <button class="s" onclick="loginDocente()">Acceso Docente</button>
-    </div>
+    <div class="nav-docente"><h1>⚗️ Laboratorio de la Tabla Periódica</h1><button class="s" onclick="loginDocente()">Acceso Docente</button></div>
     <p class="mu">2.º año · Química y Física</p>
-    
-    ${!roomActiveCloud ? `
-      <div class="banner">🔒 La sala de evaluación presencial está CERRADA por el docente. Podés repasar la teoría y practicar libremente.</div>
-    `: `
-      <div class="banner-info">🟢 La sala de evaluación presencial está HABILITADA.</div>
-    `}
-
+    ${!roomActiveCloud?`<div class="banner">🔒 La sala de evaluación presencial está CERRADA por el docente. Podés repasar la teoría y practicar libremente.</div>`:`<div class="banner-info">🟢 La sala de evaluación presencial está HABILITADA.</div>`}
     <div class="c">
       <h2>Registro de Estudiantes (para evaluar)</h2>
       <input id="cu" placeholder="Curso y división (ej.: 2.º 1.ª)">
@@ -482,613 +454,392 @@ async function reg(){
       <input id="m2" placeholder="Integrante 2 (opcional)">
       <input id="m3" placeholder="Integrante 3 (opcional)">
       <div id="er" class="r"></div>
-      <button onclick="nuevo()" ${!roomActiveCloud ? 'disabled' : ''}>Registrar y empezar evaluación</button>
+      <button onclick="nuevo()" ${!roomActiveCloud?'disabled':''}>Registrar y empezar</button>
     </div>
-
-    ${ks.length?`
-      <div class="c">
-        <h2>Continuar con un registro guardado</h2>
-        <select id="sg">${ks.map(x=>`<option>${x}</option>`).join('')}</select>
-        <button class="s" onclick="entrar($('#sg').value)" ${!roomActiveCloud ? 'disabled' : ''}>Continuar</button>
-      </div>
-    `:''}
-
-    <div class="c">
-      <h2>Estudio y Práctica Libre</h2>
-      <button class="s" onclick="modoEstudioLibre()">📖 Ver Teorías y Practicar</button>
-    </div>
+    ${ks.length?`<div class="c"><h2>Continuar con un registro guardado</h2><select id="sg">${ks.map(x=>`<option>${x}</option>`).join('')}</select><button class="s" onclick="entrar($('#sg').value)" ${!roomActiveCloud?'disabled':''}>Continuar</button></div>`:''}
+    <div class="c"><h2>Estudio y Práctica Libre</h2><button class="s" onclick="modoEstudioLibre()">📖 Ver Teorías y Practicar</button></div>
   `;
 }
 
 async function nuevo(){
   await checkCloudRoom();
-  if(!roomActiveCloud){ alert("La sala está cerrada por el docente."); return; }
-  const m=['#m1','#m2','#m3'].map(x=>$(x).value.trim()).filter(Boolean);
-  const cu=$('#cu').value.trim();
-  if(!cu || !m.length){$('#er').textContent='Completá el curso y al menos un integrante.';return}
-  const key = `${cu} - ${m[0]}`;
+  if(!roomActiveCloud){alert("La sala está cerrada por el docente.");return}
+  const m=['#m1','#m2','#m3'].map(x=>$(x).value.trim()).filter(Boolean),cu=$('#cu').value.trim();
+  if(!cu||!m.length){$('#er').textContent='Completá el curso y al menos un integrante.';return}
+  const key=`${cu} - ${m[0]}`;
   if(DB[key]){$('#er').textContent='Ya existe un registro con esos datos.';return}
-  DB[key]={name:key, cu, m, read:{}, sc:{}, attempts:0, status:'En línea'};
-  sv(); entrar(key);
+  DB[key]={name:key,cu,m,read:{},sc:{},attempts:0,status:'En línea'};
+  sv();entrar(key);
 }
-
-function entrar(n){ ld(); G=DB[n]; home(); }
+function entrar(n){ld();G=DB[n];home()}
 
 async function home(){
-  clearInterval(tm); activeExam=false; isPractice=false;
+  clearInterval(tm);activeExam=false;isPractice=false;
   await checkCloudRoom();
-  const finStrict = calcTotalScoreStrict(G);
-
-  let completedLevelsCount = 0;
-  LV.forEach((_, idx) => { if(lavg(idx) !== null) completedLevelsCount++; });
-
+  const fin=calcTotalScoreStrict(G);
+  let done=0;LV.forEach((_,i)=>{if(lavg(i)!==null)done++});
   app.innerHTML=`
-    <div class="nav-docente">
-      <h1>Estudiantes: ${G.m.join(', ')}</h1>
-      <button class="s" onclick="reg()">Salir</button>
-    </div>
+    <div class="nav-docente"><h1>Estudiantes: ${G.m.join(', ')}</h1><button class="s" onclick="reg()">Salir</button></div>
     <p class="mu">${G.cu||''}</p>
-    
-    ${G.status && G.status.includes('Bloqueado') ? `<div class="banner">⚠️ Estado: ${G.status} (Intentos de salida: ${G.attempts||0}/3)</div>` : ''}
-
+    ${(G.attempts||0)>0?`<div class="banner">⚠️ Avisos por salir de la pantalla: ${G.attempts}/3 ${G.attempts>=3?'· EVALUACIONES BLOQUEADAS':''}</div>`:''}
     <div class="c">
-      <h2>📊 Estado de la Nota Final del Proyecto</h2>
-      <span class="mu">La nota final es el promedio exacto de los 6 niveles (niveles no realizados suman 0)</span>
-      <div class="n ${finStrict>=6?'g':'r'}">${f1(finStrict)} / 10</div>
-      <p class="mu">Niveles evaluados y completados: <b>${completedLevelsCount} de 6</b></p>
+      <h2>👋 ¡Bienvenidos! ¿Qué van a encontrar acá?</h2>
+      <ul class="rules">
+        <li>📖 <b>Teoría:</b> cada nivel tiene su teoría. Leela con calma y subrayá los párrafos importantes tocándolos. Después hay un breve control de lectura.</li>
+        <li>🎮 <b>Práctica libre:</b> ejercicios ilimitados, <b>sin nota</b> y con pistas. Cambian cada vez: practicá todas las veces que quieran.</li>
+        <li>📝 <b>Evaluación:</b> cada actividad evaluada se hace <b>una sola vez</b> y la nota queda registrada.</li>
+        <li>⏳ <b>No se apuren:</b> no hay límite de tiempo. Usen todo el que necesiten, lean y practiquen bien <b>antes</b> de entrar a evaluar.</li>
+        <li>🔒 Durante una evaluación <b>no salgan ni minimicen la pantalla</b> (3 avisos máximo). Antes de empezar cada una van a ver las reglas completas.</li>
+      </ul>
     </div>
-
-    ${LV.map((L,i)=>{
-      const a=lavg(i);
-      return `
-        <div class="c">
-          <h2>${L.t}</h2>
-          <p class="mu">${L.g.map(x=>GN[x]+': '+(G.sc[x]===undefined?'—':f1(G.sc[x]))).join(' · ')}</p>
-          <span class="tag">${G.read[i]?'📖 Teoría completada':'📖 Teoría pendiente'}</span>
-          ${a!==null?`<span class="tag ${a>=6?'g':'r'}">Promedio Nivel: ${f1(a)}</span>`:''}
-          <br><br>
-          <button onclick="lvl(${i})">📖 Leer Teoría y Preguntas</button>
-          <button class="s" onclick="playPracticeLvl(${i})">🎮 Practicar Nivel (Sin Puntos)</button>
-        </div>
-      `;
-    }).join('')}
+    <div class="c">
+      <h2>📊 Nota Final del Proyecto</h2>
+      <span class="mu">Es el promedio de los ${LV.length} niveles (los niveles no realizados suman 0)</span>
+      <div class="n ${fin>=6?'g':'r'}">${f1(fin)} / 10</div>
+      <p class="mu">Niveles completados: <b>${done} de ${LV.length}</b></p>
+    </div>
+    ${LV.map((L,i)=>{const a=lavg(i);return `
+      <div class="c"><h2>${L.t}</h2>
+        <p class="mu">${L.g.map(x=>GN[x]+': '+(G.sc[x]===undefined?'—':f1(G.sc[x]))).join(' · ')}</p>
+        <span class="tag">${G.read[i]?'📖 Teoría completada':'📖 Teoría pendiente'}</span>
+        ${a!==null?`<span class="tag ${a>=6?'g':'r'}">Promedio Nivel: ${f1(a)}</span>`:''}
+        <br><br>
+        <button onclick="lvl(${i})">📖 Leer Teoría y Preguntas</button>
+        <button class="s" onclick="playPracticeLvl(${i})">🎮 Practicar Nivel (Sin Puntos)</button>
+      </div>`}).join('')}
   `;
 }
 
 async function lvl(i){
-  clearInterval(tm); LI=i;
+  clearInterval(tm);LI=i;
   await checkCloudRoom();
   const r=G?G.read[i]:true;
-  highlightedCount = 0; readingQuizStep = 0; readingQuizScore = 0;
-  showTheoryScreen(i, r || !G);
+  highlightedCount=0;readingQuizStep=0;readingQuizScore=0;
+  showTheoryScreen(i,r||!G);
 }
 
-function showTheoryScreen(i, alreadyRead){
-  const L=LV[i];
-  const totalQ = (READ_QUESTIONS[i] || []).length;
+function showTheoryScreen(i,alreadyRead){
+  const L=LV[i],totalQ=(READ_QUESTIONS[i]||[]).length;
   app.innerHTML=`
     <button class="s" onclick="${G?'home()':'modoEstudioLibre()'}">← Volver</button>
     <h1>${L.t}</h1>
     <div class="c">
-      ${alreadyRead ? `
-        <details open><summary>📖 Repasar Teoría</summary><br>${L.th}</details>
-      ` : `
-        <div class="banner-info"><b>Paso 1: Subrayado activo.</b> Hacé clic en al menos <b>2 párrafos</b> para continuar. (<span id="h-count">0</span>/2)</div>
-        <div class="th" id="theory-box">${L.th}</div>
-        <br>
-        <button id="btn-quiz" disabled onclick="startReadingQuiz(${i})">Someterse a Control de Lectura (${totalQ} ${totalQ===1?'pregunta':'preguntas'}) →</button>
-      `}
+      ${alreadyRead?`<details open><summary>📖 Repasar Teoría</summary><br>${L.th}</details>`:`
+        <div class="banner-info"><b>Paso 1: Subrayado activo.</b> Leé la teoría y tocá al menos <b>2 párrafos</b> importantes para continuar. (<span id="h-count">0</span>/2)</div>
+        <div class="th" id="theory-box">${L.th}</div><br>
+        <button id="btn-quiz" disabled onclick="startReadingQuiz(${i})">Someterse a Control de Lectura (${totalQ} ${totalQ===1?'pregunta':'preguntas'}) →</button>`}
     </div>
-
-    ${G && alreadyRead ? `
-      <div class="c">
-        <h2>Evaluación Oficial</h2>
-        ${!roomActiveCloud ? `<p class="r">🔒 Sala cerrada por el docente.</p>` : ''}
-        ${L.g.map(x=>{
-          const done = G.sc[x]!==undefined;
-          return `
-            <button ${!roomActiveCloud || done ? 'disabled':''} onclick="${x=='g0'?'startAtomInteractive(false)':(x=='g11'?'acro(false)':'startExam(\''+x+'\')')}">
-              ${done ? '✔ Completado' : '📝 Evaluar:'} ${GN[x]} ${done ? '('+f1(G.sc[x])+')':''}
-            </button>
-          `;
-        }).join('')}
-      </div>
-    `:''}
-
-    <div class="c">
-      <h2>Práctica Libre (Sin Nota)</h2>
-      ${L.g.map(x=>`<button class="s" onclick="${x=='g0'?'startAtomInteractive(true)':(x=='g11'?'acro(true)':'startPractice(\''+x+'\')')}">🎮 Practicar: ${GN[x]}</button>`).join('')}
+    ${G&&alreadyRead?`
+      <div class="c"><h2>Evaluación Oficial (una sola vez)</h2>
+        <p class="mu">💡 Antes de evaluar, repasá la teoría y practicá abajo todo lo que necesites.</p>
+        ${!roomActiveCloud?`<p class="r">🔒 Sala cerrada por el docente.</p>`:''}
+        ${L.g.map(x=>{const d=G.sc[x]!==undefined;return `<button ${!roomActiveCloud||d?'disabled':''} onclick="askExam('${x}')">${d?'✔ Completado':'📝 Evaluar:'} ${GN[x]} ${d?'('+f1(G.sc[x])+')':''}</button>`}).join('')}
+      </div>`:''}
+    <div class="c"><h2>Práctica Libre (Sin Nota)</h2>
+      ${L.g.map(x=>`<button class="s" onclick="go('${x}',true)">🎮 Practicar: ${GN[x]}</button>`).join('')}
     </div>
   `;
-
-  if(i === 0) renderClassicPTable();
+  if(i===0)renderClassicPTable();
 }
 
+/* ===== TABLA INTERACTIVA ===== */
 function renderClassicPTable(){
-  const container = $('#interactivePTable');
-  if(!container) return;
-  container.innerHTML = '';
-  
-  const gridMap = {};
-  E.forEach(e => {
-    gridMap[`${e.p}-${e.g}`] = e;
-  });
-
-  for(let p=1; p<=7; p++){
-    for(let g=1; g<=18; g++){
-      const e = gridMap[`${p}-${g}`];
-      const div = document.createElement('div');
-      if(e){
-        const stateClass = e.e === 'Sólido' ? 'solid' : (e.e === 'Líquido' ? 'liquid' : 'gas');
-        div.className = `pcell ${stateClass}`;
-        div.id = `elem-${e.s}`;
-        div.innerHTML = `<span class="num">${e.Z}</span><span class="sym">${e.s}</span>`;
-        div.onclick = () => showElementDetail(e);
-      } else {
-        div.className = 'pcell empty';
-      }
-      container.appendChild(div);
-    }
+  const box=$('#interactivePTable');if(!box)return;
+  box.innerHTML='';
+  const map={};E.forEach(e=>map[`${e.r}-${e.c}`]=e);
+  for(let r=1;r<=10;r++)for(let c=1;c<=18;c++){
+    const e=map[`${r}-${c}`],d=document.createElement('div');
+    if(e){
+      d.className=`pcell ${e.e==='Sólido'?'solid':e.e==='Líquido'?'liquid':'gas'} cl-${e.t==='Metal'?'m':e.t==='No metal'?'n':e.t==='Metaloide'?'x':'g'}`;
+      d.id='elem-'+e.s;d.innerHTML=`<span class="num">${e.Z}</span><span class="sym">${e.s}</span>`;d.onclick=()=>showElementDetail(e);
+    }else if(c===3&&(r===6||r===7)){d.className='pcell ph';d.textContent=r===6?'57-71':'89-103'}
+    else d.className='pcell empty';
+    box.appendChild(d);
   }
 }
-
 function showElementDetail(e){
-  const d = $('#elementDetail');
-  if(!d) return;
-  d.style.display = 'block';
-  d.innerHTML = `<b>${e.n} (${e.s})</b> — Z: ${e.Z} | A: ${e.A} | Grupo: ${e.g} | Período: ${e.p} | Clasificación: ${e.t} | Estado: <b>${e.e}</b>`;
+  const d=$('#elementDetail');if(!d)return;
+  d.style.display='block';
+  d.innerHTML=`<b>${e.n} (${e.s})</b> — Z: ${e.Z} | A: ${e.A} | Grupo: ${e.g||'—'} | Período: ${e.p} | ${e.t} | Estado a 25 °C: <b>${e.e}</b>`;
 }
+function highlightBy(fn){clearHighlights();E.filter(fn).forEach(e=>{const el=$('#elem-'+e.s);if(el)el.classList.add('highlighted')})}
+function clearHighlights(){document.querySelectorAll('.pcell').forEach(c=>c.classList.remove('highlighted'))}
 
-function highlightGroup(gNum){
-  clearHighlights();
-  E.filter(e => e.g === gNum).forEach(e => {
-    const el = $('#elem-' + e.s);
-    if(el) el.classList.add('highlighted');
-  });
-}
-
-function highlightPeriod(pNum){
-  clearHighlights();
-  E.filter(e => e.p === pNum).forEach(e => {
-    const el = $('#elem-' + e.s);
-    if(el) el.classList.add('highlighted');
-  });
-}
-
-function clearHighlights(){
-  document.querySelectorAll('.pcell').forEach(c => c.classList.remove('highlighted'));
-}
-
+/* ===== CONTROL DE LECTURA ===== */
 function toggleSub(el){
-  if(!el.classList.contains('subrayado')){ el.classList.add('subrayado'); highlightedCount++; }
-  else { el.classList.remove('subrayado'); highlightedCount--; }
-  const counter = $('#h-count'); if(counter) counter.textContent = highlightedCount;
-  const btn = $('#btn-quiz'); if(btn) btn.disabled = highlightedCount < 2;
+  if(!el.classList.contains('subrayado')){el.classList.add('subrayado');highlightedCount++}else{el.classList.remove('subrayado');highlightedCount--}
+  const c=$('#h-count');if(c)c.textContent=highlightedCount;
+  const b=$('#btn-quiz');if(b)b.disabled=highlightedCount<2;
+}
+function startReadingQuiz(li){
+  const qs=READ_QUESTIONS[li],q=qs[readingQuizStep];
+  app.innerHTML=`
+    <button class="s" onclick="lvl(${li})">← Cancelar</button>
+    <h1>Control de Lectura · Pregunta ${readingQuizStep+1} de ${qs.length}</h1>
+    <div class="c"><h2>${q.q}</h2>${q.o.map((o,j)=>`<button class="o" onclick="ansReadingQuiz(${j},${li})">${o}</button>`).join('')}<div id="rq-fb"></div></div>`;
+}
+function ansReadingQuiz(j,li){
+  const q=READ_QUESTIONS[li][readingQuizStep],ok=q.o[j]===q.a;
+  if(ok)readingQuizScore++;
+  document.querySelectorAll('.o').forEach((b,i)=>{b.disabled=true;if(q.o[i]===q.a)b.classList.add('ok');else if(i===j)b.classList.add('ko')});
+  $('#rq-fb').innerHTML=`<p class="${ok?'g':'r'}">${ok?'✔ ¡Correcto!':'✖ Incorrecto. La respuesta era: '+q.a}</p><button onclick="nextReadingQuizStep(${li})">Continuar</button>`;
+}
+function nextReadingQuizStep(li){
+  const qs=READ_QUESTIONS[li];readingQuizStep++;
+  if(readingQuizStep<qs.length)return startReadingQuiz(li);
+  if(readingQuizScore>=Math.ceil(qs.length/2)||qs.length===1){
+    if(G){G.read[li]=true;sv()}
+    app.innerHTML=`<div class="c"><h2>🎉 ¡Control de lectura aprobado!</h2><p class="g">Respondiste correctamente ${readingQuizScore} de ${qs.length}.</p><button onclick="lvl(${li})">Ir a las Actividades</button></div>`;
+  }else{
+    app.innerHTML=`<div class="c"><h2>⚠️ No alcanzaste el mínimo</h2><p class="r">Acertaste ${readingQuizScore} de ${qs.length}. Repasá la teoría con calma.</p><button onclick="lvl(${li})">Reintentar</button></div>`;
+  }
 }
 
-function startReadingQuiz(levelIndex){
-  const qs = READ_QUESTIONS[levelIndex] || READ_QUESTIONS[0];
-  const q = qs[readingQuizStep];
+/* ===== INSTRUCCIONES ANTES DE EVALUAR ===== */
+function askExam(id){
+  if(blocked())return;
+  if(G.sc[id]!==undefined){alert("Ya realizaste esta actividad evaluada.");return}
+  const left=3-(G.attempts||0);
   app.innerHTML=`
-    <button class="s" onclick="lvl(${levelIndex})">← Cancelar</button>
-    <h1>Control de Lectura · Pregunta ${readingQuizStep + 1} de ${qs.length}</h1>
-    <div class="c">
-      <h2>${q.q}</h2>
-      ${q.o.map((opt, j)=>`<button class="o" onclick="ansReadingQuiz(${j}, '${q.a}', ${levelIndex})">${opt}</button>`).join('')}
-      <div id="rq-fb"></div>
+    <h1>📋 Antes de empezar: ${GN[id]}</h1>
+    <div class="c"><h2>Leé estas reglas con atención</h2>
+      <ul class="rules">
+        <li>☝️ Esta evaluación se hace <b>UNA SOLA VEZ</b>: al terminar, la nota queda registrada y no se puede repetir.</li>
+        <li>⏳ <b>No hay apuro ni límite de tiempo.</b> Si no practicaste lo suficiente, volvé atrás, leé la teoría y usá la práctica libre.</li>
+        <li>🚫 <b>No salgas, no minimices la pantalla ni cambies de aplicación</b> (tampoco WhatsApp, llamadas ni notificaciones: silenciá el teléfono).</li>
+        <li>⚠️ Cada vez que salgas se registra un <b>aviso</b> y la evaluación se interrumpe. Tenés <b>3 oportunidades</b> en total (te quedan <b>${left}</b>).</li>
+        <li>🔒 Al <b>tercer aviso</b> te bloqueás automáticamente, esa actividad queda con <b>nota 1</b> y ya no podés hacer más evaluaciones.</li>
+        <li>🔋 Verificá tener batería e internet antes de comenzar.</li>
+      </ul>
+      <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="okc" style="width:auto;margin:0" onchange="$('#bgo').disabled=!this.checked"> Leí y entendí las reglas</label>
     </div>
-  `;
+    <button id="bgo" disabled onclick="beginExam('${id}')">Comenzar evaluación</button>
+    <button class="s" onclick="lvl(${LI})">← Volver a practicar</button>`;
+}
+async function beginExam(id){
+  await checkCloudRoom();
+  if(!roomActiveCloud){alert("La sala está cerrada por el docente.");return lvl(LI)}
+  if(blocked())return;
+  go(id,false);
+}
+function go(x,p){
+  if(x==='g0'||x==='g13')startAtom(x,p);
+  else if(x==='g11')acro(p);
+  else if(p)startPractice(x);else startExam(x);
 }
 
-function ansReadingQuiz(selectedIdx, correctAns, levelIndex){
-  const qs = READ_QUESTIONS[levelIndex] || READ_QUESTIONS[0];
-  const q = qs[readingQuizStep];
-  const isCorrect = (q.o[selectedIdx] === correctAns);
-  if(isCorrect) readingQuizScore++;
-  const buttons = document.querySelectorAll('.o');
-  buttons.forEach((btn, idx)=>{
-    btn.disabled = true;
-    if(q.o[idx] === correctAns) btn.classList.add('ok');
-    else if(idx === selectedIdx) btn.classList.add('ko');
-  });
-  $('#rq-fb').innerHTML=`
-    <p class="${isCorrect?'g':'r'}">${isCorrect?'✔ ¡Correcto!':'✖ Incorrecto. La respuesta era: '+correctAns}</p>
-    <button onclick="nextReadingQuizStep(${levelIndex})">Continuar</button>
-  `;
+/* ===== CONSTRUCTOR DE ÁTOMOS ===== */
+const T=(n,Z,A,nm)=>({n,Z,A,p:Z,pn:A-Z,e:Z,nm});
+const ATOMS={
+  g0:{p:[T('Litio (Li)',3,7),T('Berilio (Be)',4,9)],e:[T('Carbono (C)',6,12),T('Nitrógeno (N)',7,14)]},
+  g13:{p:[T('Litio-7',3,7,['litio7','li7']),T('Hidrógeno-3 (Tritio)',1,3,['tritio','hidrogeno3','h3'])],
+       e:[T('Carbono-14',6,14,['carbono14','c14']),T('Hidrógeno-2 (Deuterio)',1,2,['deuterio','hidrogeno2','h2'])]}
+};
+function startAtom(id,pr){
+  if(!pr&&G&&G.sc[id]!==undefined){alert("Ya realizaste esta actividad evaluada.");return}
+  isPractice=pr;activeExam=!pr;GI=id;LI=id==='g0'?1:2;
+  AT={s:ATOMS[id][pr?'p':'e'],i:0,r:[]};atomView();
 }
-
-function nextReadingQuizStep(levelIndex){
-  const qs = READ_QUESTIONS[levelIndex] || READ_QUESTIONS[0];
-  readingQuizStep++;
-  if(readingQuizStep < qs.length){
-    startReadingQuiz(levelIndex);
-  } else {
-    if(readingQuizScore >= Math.ceil(qs.length/2) || qs.length === 1){
-      if(G){ G.read[levelIndex] = true; sv(); }
-      app.innerHTML=`<div class="c"><h2>🎉 ¡Control de lectura aprobado!</h2><p class="g">Respondiste correctamente ${readingQuizScore} de ${qs.length} preguntas.</p><button onclick="lvl(${levelIndex})">Ir a las Actividades</button></div>`;
-    } else {
-      app.innerHTML=`<div class="c"><h2>⚠️ No alcanzaste el mínimo</h2><p class="r">Aprobaste ${readingQuizScore} de ${qs.length}. Debes repasar la teoría.</p><button onclick="lvl(${levelIndex})">Reintentar</button></div>`;
-    }
-  }
-}
-
-function startAtomInteractive(practiceMode=false){
-  isPractice = practiceMode;
-  if(!isPractice && roomActiveCloud && G && G.sc['g0']!==undefined){
-    alert("Ya realizaste el dibujo evaluado del átomo."); return;
-  }
-  if(!isPractice) activeExam = true;
-  GI = 'g0'; LI = 1; placedParticles = []; activeParticle = 'prot';
-
-  const target = isPractice ? { name: 'Litio (Li)', Z: 3, A: 7, p: 3, n: 4, e: 3 } : { name: 'Carbono (C)', Z: 6, A: 12, p: 6, n: 6, e: 6 };
-  window.CURRENT_ATOM_TARGET = target;
-
+function atomView(){
+  const t=AT.s[AT.i];placed=[];part='prot';
   app.innerHTML=`
-    <div class="banner-info">${isPractice ? '🎮 MODO PRÁCTICA LIBRE (Litio)' : '⚠️ EVALUACIÓN OFICIAL - Construcción del Átomo (Carbono)'}</div>
-    <button class="s" onclick="lvl(1)">← Volver</button>
-    <h1>Dibujo de la Estructura Atómica</h1>
-    <p>Construí un átomo neutro de <b>${target.name} (Z = ${target.Z}, A = ${target.A})</b>.</p>
-    <p class="mu">Seleccioná una partícula y hacé clic en el lienzo para colocarla en la zona correspondiente (Núcleo o Corteza).</p>
-
+    <div class="banner-info">${isPractice?'🎮 MODO PRÁCTICA LIBRE':'⚠️ EVALUACIÓN OFICIAL - No salgas ni minimices la pantalla'}</div>
+    ${isPractice?`<button class="s" onclick="lvl(${LI})">← Volver</button>`:''}
+    <h1>${GN[GI]} · Átomo ${AT.i+1} de ${AT.s.length}</h1>
+    <p>${t.nm?`Hay un átomo neutro con <b>Z = ${t.Z}</b> y <b>A = ${t.A}</b>. Buscá el elemento en la tabla periódica, escribí cómo se nombra el isótopo y construí su modelo.`:`Construí un átomo neutro de <b>${t.n}</b> (Z = ${t.Z}, A = ${t.A}).`}</p>
+    ${t.nm?`<input id="nmI" autocomplete="off" placeholder="Nombre del isótopo (ej.: Oxígeno-17)">`:''}
+    <p class="mu">Elegí una partícula y tocá el lienzo: protones y neutrones en el <b>núcleo</b> (centro), electrones en la <b>corteza</b> (fuera del círculo central).</p>
     <div class="palette">
       <button class="part-btn p-prot active" id="btn-p" onclick="selectPart('prot')">🔴 Protón (+)</button>
       <button class="part-btn p-neut" id="btn-n" onclick="selectPart('neut')">⚪ Neutrón (0)</button>
       <button class="part-btn p-elec" id="btn-e" onclick="selectPart('elec')">🔵 Electrón (-)</button>
     </div>
-
-    <div class="atom-canvas-container">
-      <canvas id="atomCanvas" width="340" height="340"></canvas>
-    </div>
-
-    <div class="c">
-      <button onclick="clearAtomCanvas()">🗑️ Borrar Todo</button>
-      <button onclick="validateAtomBuild()">✔ Validar Átomo</button>
-    </div>
-  `;
-
-  setTimeout(initAtomCanvas, 50);
+    <p class="mu" id="cnt" style="text-align:center"></p>
+    <div class="atom-canvas-container"><canvas id="atomCanvas" width="340" height="340"></canvas></div>
+    <div class="c"><button class="s" onclick="placed.pop();drawAtom()">↩ Deshacer</button><button class="s" onclick="placed=[];drawAtom()">🗑️ Borrar todo</button><button onclick="validateAtom()">✔ Validar</button></div>`;
+  const cv=$('#atomCanvas');
+  cv.addEventListener('pointerdown',ev=>{const r=cv.getBoundingClientRect(),s=cv.width/r.width;placed.push({x:(ev.clientX-r.left)*s,y:(ev.clientY-r.top)*s,t:part});drawAtom()});
+  drawAtom();
 }
-
-function selectPart(type){
-  activeParticle = type;
-  document.querySelectorAll('.part-btn').forEach(b=>b.classList.remove('active'));
-  $('#btn-'+type.charAt(0)).classList.add('active');
-}
-
-function initAtomCanvas(){
-  const cv = $('#atomCanvas');
-  if(!cv) return;
-  const ctx = cv.getContext('2d');
-
-  const draw = () => {
-    ctx.clearRect(0, 0, cv.width, cv.height);
-    const cx = cv.width/2, cy = cv.height/2;
-
-    ctx.strokeStyle = '#334155'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
-    ctx.beginPath(); ctx.arc(cx, cy, 70, 0, Math.PI*2); ctx.stroke();
-    ctx.beginPath(); ctx.arc(cx, cy, 120, 0, Math.PI*2); ctx.stroke();
-    ctx.setLineDash([]);
-
-    ctx.fillStyle = 'rgba(239, 68, 68, 0.15)';
-    ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.arc(cx, cy, 40, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-
-    ctx.fillStyle = '#94a3b8'; ctx.font = '12px sans-serif';
-    ctx.fillText('NÚCLEO', cx - 22, cy + 4);
-    ctx.fillText('CORTEZA', cx - 26, cy - 80);
-
-    placedParticles.forEach(p => {
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 9, 0, Math.PI*2);
-      if(p.type === 'prot') { ctx.fillStyle = '#ef4444'; ctx.fill(); ctx.fillStyle='#fff'; ctx.font='10px sans-serif'; ctx.fillText('+', p.x-3, p.y+3); }
-      else if(p.type === 'neut') { ctx.fillStyle = '#94a3b8'; ctx.fill(); ctx.fillStyle='#000'; ctx.font='10px sans-serif'; ctx.fillText('n', p.x-3, p.y+3); }
-      else if(p.type === 'elec') { ctx.fillStyle = '#3b82f6'; ctx.fill(); ctx.fillStyle='#fff'; ctx.font='10px sans-serif'; ctx.fillText('-', p.x-2, p.y+3); }
-    });
-  };
-
-  cv.addEventListener('pointerdown', (e) => {
-    const rect = cv.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    placedParticles.push({ x, y, type: activeParticle });
-    draw();
+function selectPart(t){part=t;document.querySelectorAll('.part-btn').forEach(b=>b.classList.remove('active'));$('#btn-'+t.charAt(0)).classList.add('active')}
+function drawAtom(){
+  const cv=$('#atomCanvas');if(!cv)return;
+  const ctx=cv.getContext('2d'),cx=170,cy=170;
+  ctx.clearRect(0,0,340,340);
+  ctx.strokeStyle='#334155';ctx.lineWidth=2;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.arc(cx,cy,70,0,7);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,120,0,7);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(239,68,68,.15)';ctx.strokeStyle='#ef4444';ctx.lineWidth=1;
+  ctx.beginPath();ctx.arc(cx,cy,45,0,7);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#94a3b8';ctx.font='12px sans-serif';ctx.fillText('NÚCLEO',cx-22,cy+60);ctx.fillText('CORTEZA',cx-26,cy-128);
+  let c={prot:0,neut:0,elec:0};
+  placed.forEach(p=>{
+    c[p.t]++;ctx.beginPath();ctx.arc(p.x,p.y,9,0,7);ctx.font='10px sans-serif';
+    if(p.t==='prot'){ctx.fillStyle='#ef4444';ctx.fill();ctx.fillStyle='#fff';ctx.fillText('+',p.x-3,p.y+3)}
+    else if(p.t==='neut'){ctx.fillStyle='#94a3b8';ctx.fill();ctx.fillStyle='#000';ctx.fillText('n',p.x-3,p.y+3)}
+    else{ctx.fillStyle='#3b82f6';ctx.fill();ctx.fillStyle='#fff';ctx.fillText('-',p.x-2,p.y+3)}
   });
-
-  draw();
+  const n=$('#cnt');if(n)n.textContent=`Colocados → Protones: ${c.prot} · Neutrones: ${c.neut} · Electrones: ${c.elec}`;
 }
-
-function clearAtomCanvas(){
-  placedParticles = [];
-  initAtomCanvas();
-}
-
-function validateAtomBuild(){
-  const target = window.CURRENT_ATOM_TARGET || { name: 'Litio (Li)', Z: 3, A: 7, p: 3, n: 4, e: 3 };
-  const cx = 170, cy = 170;
-  let pCount = 0, nCount = 0, eCount = 0;
-  let coreErrors = false, crustErrors = false;
-
-  placedParticles.forEach(p => {
-    const dist = Math.hypot(p.x - cx, p.y - cy);
-    if(p.type === 'prot'){
-      pCount++;
-      if(dist > 45) coreErrors = true;
-    } else if(p.type === 'neut'){
-      nCount++;
-      if(dist > 45) coreErrors = true;
-    } else if(p.type === 'elec'){
-      eCount++;
-      if(dist < 50) crustErrors = true;
-    }
-  });
-
-  const correctCounts = (pCount === target.p && nCount === target.n && eCount === target.e);
-  const perfectlyBuilt = correctCounts && !coreErrors && !crustErrors;
-
-  activeExam = false;
-  const scoreVal = perfectlyBuilt ? 10 : (correctCounts ? 6 : 2);
-
-  if(!isPractice && G){
-    G.sc['g0'] = scoreVal;
-    sv();
+function validateAtom(){
+  const t=AT.s[AT.i];let p=0,n=0,e=0,bad=false;
+  placed.forEach(o=>{const d=Math.hypot(o.x-170,o.y-170);
+    if(o.t==='prot'){p++;if(d>50)bad=true}else if(o.t==='neut'){n++;if(d>50)bad=true}else{e++;if(d<55)bad=true}});
+  const okc=p===t.p&&n===t.pn&&e===t.e;
+  let b=okc&&!bad?10:okc?6:2,nameOk=null;
+  if(t.nm){nameOk=t.nm.includes(nz($('#nmI').value));b=(nameOk?5:0)+b/2}
+  AT.r.push({t,p,n,e,bad,b,nameOk});
+  const last=AT.i===AT.s.length-1;
+  if(last)activeExam=false;
+  const R=AT.r[AT.r.length-1];
+  let fin='';
+  if(last){
+    const avg=Math.round(mean(AT.r.map(x=>x.b))*10)/10;
+    if(!isPractice&&G){G.sc[GI]=avg;sv()}
+    fin=`<h2>Nota de la actividad: <span class="${avg>=6?'g':'r'}">${f1(avg)} / 10</span></h2>`;
   }
-
-  app.innerHTML = `
-    <div class="c">
-      <h2>Resultado del Dibujo Atómico (${target.name})</h2>
-      <div class="n ${scoreVal>=6?'g':'r'}">${scoreVal} / 10</div>
-      <p><b>Resumen de tu construcción:</b></p>
-      <ul>
-        <li>Protones en núcleo: ${pCount} / ${target.p} ${pCount===target.p?'✔':'✖'}</li>
-        <li>Neutrones en núcleo: ${nCount} / ${target.n} ${nCount===target.n?'✔':'✖'}</li>
-        <li>Electrones en corteza: ${eCount} / ${target.e} ${eCount===target.e?'✔':'✖'}</li>
-      </ul>
-      ${coreErrors ? '<p class="r">⚠️ Los protones y neutrones deben colocarse DENTRO del núcleo.</p>' : ''}
-      ${crustErrors ? '<p class="r">⚠️ Los electrones deben colocarse FUERA del núcleo (en la corteza).</p>' : ''}
-      <button onclick="${isPractice ? 'startAtomInteractive(true)' : 'lvl(1)'}">Continuar</button>
-    </div>
-  `;
+  app.innerHTML=`<div class="c">
+    <h2>Átomo ${AT.i+1}: ${t.n}</h2>
+    <div class="n ${R.b>=6?'g':'r'}">${f1(R.b)} / 10</div>
+    <ul>
+      <li>Protones: ${p} / ${t.p} ${p===t.p?'✔':'✖'}</li><li>Neutrones: ${n} / ${t.pn} ${n===t.pn?'✔':'✖'}</li><li>Electrones: ${e} / ${t.e} ${e===t.e?'✔':'✖'}</li>
+      ${t.nm?`<li>Nombre del isótopo (${t.n}): ${nameOk?'✔':'✖'}</li>`:''}
+    </ul>
+    ${bad?'<p class="r">⚠️ Protones y neutrones van DENTRO del núcleo; los electrones FUERA, en la corteza.</p>':''}
+    ${fin}
+    ${last?`${isPractice?`<button onclick="startAtom('${GI}',true)">Practicar de nuevo</button><button class="s" onclick="lvl(${LI})">Volver al Nivel</button>`:`<button onclick="lvl(${LI})">Volver al Nivel</button>`}`
+          :`<button onclick="AT.i++;atomView()">Siguiente átomo →</button>`}
+  </div>`;
 }
 
+/* ===== PREGUNTAS ===== */
 async function startExam(id){
   await checkCloudRoom();
-  if(!roomActiveCloud){ alert("La sala está cerrada."); return; }
-  if(G.sc[id] !== undefined){ alert("Ya realizaste esta actividad evaluada."); return; }
-  isPractice = false; activeExam = true; GI = id;
-  Q = EVAL_QUESTIONS[id] || GEN_PRACTICE[id]();
-  k = 0; sc = 0;
-  show();
+  if(!roomActiveCloud){alert("La sala está cerrada.");return}
+  if(blocked())return;
+  if(G.sc[id]!==undefined){alert("Ya realizaste esta actividad evaluada.");return}
+  isPractice=false;activeExam=true;GI=id;
+  Q=EVAL_QUESTIONS[id]||GEN_PRACTICE[id]();k=0;sc=0;show();
 }
-
 function startPractice(id){
-  isPractice = true; activeExam = false; GI = id;
-  Q = GEN_PRACTICE[id] ? GEN_PRACTICE[id]() : EVAL_QUESTIONS[id];
-  k = 0; sc = 0;
-  show();
+  isPractice=true;activeExam=false;GI=id;
+  Q=GEN_PRACTICE[id]?GEN_PRACTICE[id]():EVAL_QUESTIONS[id];k=0;sc=0;show();
 }
-
-function playPracticeLvl(i){ LI=i; startPractice(LV[i].g[0]); }
+function playPracticeLvl(i){LI=i;go(LV[i].g[0],true)}
 
 function show(){
   const q=Q[k];
   app.innerHTML=`
-    <div class="banner-info">
-      ${isPractice ? '🎮 MODO PRÁCTICA LIBRE' : '⚠️ EVALUACIÓN OFICIAL EN CURSO - No salgas ni minimices la pantalla'}
-    </div>
-    <p class="mu">${GN[GI]} · Pregunta ${k+1} de ${Q.length} ${isPractice ? '' : '· Puntos: '+f1(sc*10/Q.length)}</p>
+    <div class="banner-info">${isPractice?'🎮 MODO PRÁCTICA LIBRE':'⚠️ EVALUACIÓN OFICIAL EN CURSO - No salgas ni minimices la pantalla'}</div>
+    <p class="mu">${GN[GI]} · Pregunta ${k+1} de ${Q.length} ${isPractice?'':'· Puntos: '+f1(sc*10/Q.length)}</p>
     <div class="c">
       <h2>${q.q}</h2>
+      ${isPractice&&q.h?`<p class="mu">💡 Pista: ${q.h}</p>`:''}
       ${q.w?`<input id="wi" autocomplete="off" placeholder="Tu respuesta"><button id="wb" onclick="aw()">Responder</button>`:q.o.map((x,j)=>`<button class="o" onclick="ans(${j})">${x}</button>`).join('')}
       <div id="fb"></div>
-    </div>
-  `;
+    </div>`;
 }
-
 function ans(j){
-  const q=Q[k], b=document.querySelectorAll('.o');
-  b.forEach((x,i)=>{
-    x.disabled=true;
-    if(q.o[i]===q.a) x.classList.add('ok');
-    else if(i==j) x.classList.add('ko');
-  });
+  const q=Q[k];
+  document.querySelectorAll('.o').forEach((x,i)=>{x.disabled=true;if(q.o[i]===q.a)x.classList.add('ok');else if(i==j)x.classList.add('ko')});
   fin(q.o[j]===q.a);
 }
-
 function aw(){
-  const q=Q[k], v=nz($('#wi').value);
-  $('#wi').disabled=true; $('#wb').disabled=true;
-  fin(q.w.includes(v));
+  const q=Q[k],v=nz($('#wi').value);
+  $('#wi').disabled=true;$('#wb').disabled=true;
+  fin(q.w.map(nz).includes(v));
 }
-
 function fin(g){
-  if(g) sc++;
-  $('#fb').innerHTML=`
-    <p class="${g?'g':'r'}">${g?'✔ ¡Correcto!':'✖ La respuesta correcta era: '+Q[k].a}</p>
-    <button onclick="nx()">${k<Q.length-1?'Siguiente':'Ver resultado'}</button>
-  `;
+  if(g)sc++;
+  $('#fb').innerHTML=`<p class="${g?'g':'r'}">${g?'✔ ¡Correcto!':'✖ La respuesta correcta era: '+Q[k].a}</p><button onclick="nx()">${k<Q.length-1?'Siguiente':'Ver resultado'}</button>`;
 }
-
 function nx(){
-  k++;
-  if(k<Q.length) return show();
-  activeExam = false;
-  const n = Math.round(sc*100/Q.length)/10;
-
-  if(!isPractice && G){
-    G.sc[GI] = n;
-    sv();
-  }
-
-  const a = lavg(LI);
-  app.innerHTML=`
-    <div class="c">
-      <h2>${GN[GI]} (${isPractice ? 'Práctica' : 'Evaluación'})</h2>
-      <div class="n ${n>=6?'g':'r'}">${n} / 10</div>
-      <p>Respuestas correctas: ${sc} de ${Q.length}.</p>
-      ${isPractice ? `
-        <button onclick="startPractice('${GI}')">Practicar de nuevo</button>
-        <button class="s" onclick="lvl(${LI})">Volver al Nivel</button>
-      ` : `
-        ${a!==null ? `<p>Promedio acumulado del nivel: <b>${f1(a)}</b></p>` : ''}
-        <button class="s" onclick="lvl(${LI})">Volver al Nivel</button>
-        <button class="s" onclick="home()">Ir al Inicio</button>
-      `}
-    </div>
-  `;
+  k++;if(k<Q.length)return show();
+  activeExam=false;
+  const n=Math.round(sc*100/Q.length)/10;
+  if(!isPractice&&G){G.sc[GI]=n;sv()}
+  const a=lavg(LI);
+  app.innerHTML=`<div class="c">
+    <h2>${GN[GI]} (${isPractice?'Práctica':'Evaluación'})</h2>
+    <div class="n ${n>=6?'g':'r'}">${f1(n)} / 10</div>
+    <p>Respuestas correctas: ${sc} de ${Q.length}.</p>
+    ${isPractice?`<button onclick="startPractice('${GI}')">Practicar de nuevo</button><button class="s" onclick="lvl(${LI})">Volver al Nivel</button>`
+    :`${a!==null?`<p>Promedio acumulado del nivel: <b>${f1(a)}</b></p>`:''}<button class="s" onclick="lvl(${LI})">Volver al Nivel</button><button class="s" onclick="home()">Ir al Inicio</button>`}
+  </div>`;
 }
 
-function acro(practiceMode=false){
-  isPractice = practiceMode;
-  if(!isPractice && roomActiveCloud && G && G.sc['g11']!==undefined){
-    alert("Ya realizaste esta actividad evaluada."); return;
-  }
-  if(!isPractice) activeExam = true;
-  GI='g11'; LI=5;
-
+/* ===== ACRÓSTICO ===== */
+function acro(pr){
+  isPractice=pr;
+  if(!pr&&G&&G.sc['g11']!==undefined){alert("Ya realizaste esta actividad evaluada.");return}
+  if(!pr)activeExam=true;
+  GI='g11';LI=6;ACL=pr?ACP:AC;
   app.innerHTML=`
-    <div class="banner-info">${isPractice ? '🎮 MODO PRÁCTICA' : '⚠️ EVALUACIÓN EN CURSO'}</div>
-    <button class="s" onclick="lvl(5)">← Volver</button>
-    <h1>Acróstico</h1>
-    <p>Completá cada palabra empezando con la letra indicada.</p>
-    ${AC.map((a,i)=>`
-      <div class="c">
-        <b>${a[0]}</b> · ${a[2]}
-        <input id="ac${i}" autocomplete="off" placeholder="Empieza con ${a[0]}">
-        <div id="ar${i}"></div>
-      </div>
-    `).join('')}
-    <button id="ab" onclick="acheck()">Comprobar</button>
-    <div id="ao"></div>
-  `;
+    <div class="banner-info">${pr?'🎮 MODO PRÁCTICA':'⚠️ EVALUACIÓN EN CURSO - No salgas ni minimices la pantalla'}</div>
+    ${pr?`<button class="s" onclick="lvl(6)">← Volver</button>`:''}
+    <h1>Acróstico</h1><p>Leé cada pista y escribí la palabra que corresponde.</p>
+    ${ACL.map((a,i)=>`<div class="c"><b>${i+1}.</b> ${a[2]}<input id="ac${i}" autocomplete="off" placeholder="Escribí la palabra"><div id="ar${i}"></div></div>`).join('')}
+    <button id="ab" onclick="acheck()">Comprobar</button><div id="ao"></div>`;
 }
-
 function acheck(){
   let c=0;
-  AC.forEach((a,i)=>{
-    const g=nz($('#ac'+i).value)==nz(a[1]);
-    if(g) c++;
+  ACL.forEach((a,i)=>{
+    const g=nz($('#ac'+i).value)==nz(a[1]);if(g)c++;
     $('#ac'+i).disabled=true;
     $('#ar'+i).innerHTML=g?'<span class="g">✔ Correcto</span>':'<span class="r">✖ Era: '+a[1]+'</span>';
   });
-  $('#ab').disabled=true;
-  activeExam = false;
-  const scoreVal = Math.round((c/7)*100)/10;
-  if(!isPractice && G){
-    G.sc['g11'] = scoreVal;
-    sv();
-  }
-  $('#ao').innerHTML=`<p>Acertaste ${c} de 7. Nota: ${scoreVal}</p><button onclick="${isPractice ? 'lvl(5)' : 'home()'}">Continuar</button>`;
+  $('#ab').disabled=true;activeExam=false;
+  const v=Math.round((c/7)*100)/10;
+  if(!isPractice&&G){G.sc['g11']=v;sv()}
+  $('#ao').innerHTML=`<p>Acertaste ${c} de 7. Nota: ${f1(v)}</p><button onclick="${isPractice?'lvl(6)':'home()'}">Continuar</button>`;
 }
 
 function modoEstudioLibre(){
-  G=null; isPractice=true; activeExam=false;
+  G=null;isPractice=true;activeExam=false;
   app.innerHTML=`
-    <div class="nav-docente">
-      <h1>📖 Repaso y Práctica Libre</h1>
-      <button class="s" onclick="reg()">Volver</button>
-    </div>
-    ${LV.map((L,i)=>`<div class="c"><h2>${L.t}</h2><button onclick="lvl(${i})">📖 Ver Teoría y Ejercitar</button></div>`).join('')}
-  `;
+    <div class="nav-docente"><h1>📖 Repaso y Práctica Libre</h1><button class="s" onclick="reg()">Volver</button></div>
+    ${LV.map((L,i)=>`<div class="c"><h2>${L.t}</h2><button onclick="lvl(${i})">📖 Ver Teoría y Ejercitar</button></div>`).join('')}`;
 }
 
+/* ===== PANEL DOCENTE ===== */
 function loginDocente(){
-  const p = prompt("Ingrese la clave del docente:");
-  if(p === "docente123") panelDocente();
-  else if(p !== null) alert("Clave incorrecta.");
+  const p=prompt("Ingrese la clave del docente:");
+  if(p==="docente123")panelDocente();else if(p!==null)alert("Clave incorrecta.");
 }
-
 async function panelDocente(){
-  ld();
-  await checkCloudRoom();
+  ld();await checkCloudRoom();
   const ks=Object.keys(DB);
   app.innerHTML=`
-    <div class="nav-docente">
-      <h1>👨‍🏫 Panel del Docente</h1>
-      <button class="s" onclick="reg()">Cerrar Panel</button>
-    </div>
-    <div class="c">
-      <h2>Control de la Sala (Nube)</h2>
-      <p><b>Estado actual:</b> ${roomActiveCloud ? '🟢 ABIERTA' : '🔴 CERRADA'}</p>
-      <button onclick="setCloudRoom(true)">Habilitar Sala</button>
-      <button class="danger" onclick="setCloudRoom(false)">Cerrar Sala</button>
-    </div>
-
-    <div class="c">
-      <h2>🔓 Rehabilitar Estudiante Bloqueado</h2>
-      <p class="mu">Si un alumno fue bloqueado en su teléfono, ingresá su Curso y Nombre para rehabilitarlo:</p>
-      <input id="reh_cu" placeholder="Curso y división (ej.: 2.º 1.ª)">
-      <input id="reh_nom" placeholder="Nombre del Integrante 1">
-      <button onclick="rehabilitarPorNombre()">Rehabilitar Estudiante</button>
-    </div>
-
-    <div class="c">
-      <h2>Monitoreo Local</h2>
-      <table>
-        <thead><tr><th>Estudiantes</th><th>Nota Final (÷ 6)</th><th>Salidas / Estado</th></tr></thead>
-        <tbody>
-          ${ks.length === 0 ? '<tr><td colspan="3">Sin registros en este dispositivo. Las notas generales podés verlas en tu Google Sheet.</td></tr>' : ''}
-          ${ks.map(k => {
-            const g = DB[k];
-            const tot = calcTotalScoreStrict(g);
-            return `
-              <tr>
-                <td><b>${g.m.join(', ')}</b><br><small>${g.cu||''}</small></td>
-                <td><b>${f1(tot)}</b></td>
-                <td>${g.status || 'En línea'}<br><small>Intentos: ${g.attempts || 0}/3</small></td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
-    </div>
-  `;
+    <div class="nav-docente"><h1>👨‍🏫 Panel del Docente</h1><button class="s" onclick="reg()">Cerrar Panel</button></div>
+    <div class="c"><h2>Control de la Sala (Nube)</h2>
+      <p><b>Estado actual:</b> ${roomActiveCloud?'🟢 ABIERTA':'🔴 CERRADA'}</p>
+      <button onclick="setCloudRoom(true)">Habilitar Sala</button><button class="danger" onclick="setCloudRoom(false)">Cerrar Sala</button></div>
+    <div class="c"><h2>🔓 Rehabilitar Estudiante Bloqueado</h2>
+      <p class="mu">Ingresá su Curso y el nombre del Integrante 1 para reiniciar sus avisos:</p>
+      <input id="reh_cu" placeholder="Curso y división (ej.: 2.º 1.ª)"><input id="reh_nom" placeholder="Nombre del Integrante 1">
+      <button onclick="rehabilitarPorNombre()">Rehabilitar Estudiante</button></div>
+    <div class="c"><h2>Monitoreo Local</h2>
+      <table><thead><tr><th>Estudiantes</th><th>Nota Final (÷ ${LV.length})</th><th>Avisos / Estado</th></tr></thead><tbody>
+      ${ks.length===0?'<tr><td colspan="3">Sin registros en este dispositivo. Las notas generales podés verlas en tu Google Sheet.</td></tr>':''}
+      ${ks.map(x=>{const g=DB[x];return `<tr><td><b>${g.m.join(', ')}</b><br><small>${g.cu||''}</small></td><td><b>${f1(calcTotalScoreStrict(g))}</b></td><td>${g.status||'En línea'}<br><small>Avisos: ${g.attempts||0}/3</small></td></tr>`}).join('')}
+      </tbody></table></div>`;
 }
-
 function rehabilitarPorNombre(){
-  const cu = $('#reh_cu').value.trim();
-  const nom = $('#reh_nom').value.trim();
-  if(!cu || !nom){ alert("Completá el curso y el nombre del integrante."); return; }
-  
-  const key = `${cu} - ${nom}`;
-  
-  if(DB[key]){
-    DB[key].attempts = 0;
-    DB[key].status = 'Habilitado por el docente';
-    sv();
-  } else {
-    const payload = {
-      cu: cu,
-      m: [nom],
-      sc: {},
-      finalScore: 0,
-      status: "Habilitado por el docente",
-      attempts: 0
-    };
-    fetch(SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+  const cu=$('#reh_cu').value.trim(),nom=$('#reh_nom').value.trim();
+  if(!cu||!nom){alert("Completá el curso y el nombre del integrante.");return}
+  const key=`${cu} - ${nom}`;
+  if(DB[key]){DB[key].attempts=0;DB[key].status='Habilitado por el docente';sv()}
+  else{
+    fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({cu,m:[nom],sc:{},finalScore:0,status:"Habilitado por el docente",attempts:0})});
   }
-  
-  alert(`Solicitud de rehabilitación enviada para ${key}. El alumno ya puede volver a ingresar.`);
+  alert(`Solicitud de rehabilitación enviada para ${key}.`);
   panelDocente();
 }
-
 async function setCloudRoom(active){
-  try {
-    await fetch(SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "setRoom", active: active })
-    });
-    alert(active ? "🟢 Sala abierta exitosamente para todos los alumnos." : "🔴 Sala cerrada.");
+  try{
+    await fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"setRoom",active})});
+    alert(active?"🟢 Sala abierta exitosamente para todos los alumnos.":"🔴 Sala cerrada.");
     panelDocente();
-  } catch(e) {
-    alert("Error al cambiar el estado de la sala.");
-  }
+  }catch(e){alert("Error al cambiar el estado de la sala.")}
 }
 
 reg();
